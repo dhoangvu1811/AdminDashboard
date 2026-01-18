@@ -10,10 +10,13 @@ import '@/app/globals.css'
 // Generated Icon CSS Imports
 import '@assets/iconify-icons/generated-icons.css'
 
+// Providers
+import { ReduxProvider } from '@/redux/provider'
+import { ToastProvider } from '@/components/providers/ToastProvider'
+
 export const metadata = {
-  title: 'Demo: Materio - NextJS Dashboard Free',
-  description:
-    'Develop next-level web apps with Materio Dashboard Free - NextJS. Now, updated with lightning-fast routing powered by MUI and App router.'
+  title: 'Admin Dashboard',
+  description: 'Admin Dashboard for E-commerce Management'
 }
 
 const RootLayout = ({ children }: ChildrenType) => {
@@ -22,7 +25,12 @@ const RootLayout = ({ children }: ChildrenType) => {
 
   return (
     <html id='__next' dir={direction}>
-      <body className='flex is-full min-bs-full flex-auto flex-col'>{children}</body>
+      <body className='flex is-full min-bs-full flex-auto flex-col'>
+        <ReduxProvider>
+          {children}
+          <ToastProvider />
+        </ReduxProvider>
+      </body>
     </html>
   )
 }
