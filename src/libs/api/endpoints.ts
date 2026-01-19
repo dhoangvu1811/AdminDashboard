@@ -13,6 +13,7 @@ export const API_ENDPOINTS = {
   USERS: {
     ALL: '/users/all',
     OVERVIEW: '/users/overview',
+    ME: '/users/me',
     DETAILS: (id: number | string) => `/users/details/${id}`,
     CREATE: '/users/create',
     UPDATE: (id: number | string) => `/users/update/${id}`,
@@ -20,6 +21,13 @@ export const API_ENDPOINTS = {
     DELETE_MULTIPLE: '/users/delete-multiple',
     ACTIVATE: (id: number | string) => `/users/activate/${id}`,
     DEACTIVATE: (id: number | string) => `/users/deactivate/${id}`
+  },
+
+  // Session Management
+  SESSIONS: {
+    GET_USER_SESSIONS: (userId: number | string) => `/users/sessions/${userId}`,
+    REVOKE_SESSION: '/users/revoke-session',
+    REVOKE_ALL_SESSIONS: (userId: number | string) => `/users/revoke-all-sessions/${userId}`
   },
 
   // Product Management

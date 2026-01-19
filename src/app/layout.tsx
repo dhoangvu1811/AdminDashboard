@@ -13,6 +13,7 @@ import '@assets/iconify-icons/generated-icons.css'
 // Providers
 import { ReduxProvider } from '@/redux/provider'
 import { ToastProvider } from '@/components/providers/ToastProvider'
+import { AuthProvider } from '@/components/providers/AuthProvider'
 
 export const metadata = {
   title: 'Admin Dashboard',
@@ -27,7 +28,7 @@ const RootLayout = ({ children }: ChildrenType) => {
     <html id='__next' dir={direction}>
       <body className='flex is-full min-bs-full flex-auto flex-col'>
         <ReduxProvider>
-          {children}
+          <AuthProvider>{children}</AuthProvider>
           <ToastProvider />
         </ReduxProvider>
       </body>
