@@ -16,11 +16,12 @@ export function useAuth() {
   const dispatch = useAppDispatch()
   const { user, isAuthenticated, isLoading, isCheckingAuth, error } = useAppSelector(state => state.auth)
 
-  // Login handler
+  // Login handler - BE đã kiểm tra loginContext kết hợp với role (admin/staff)
   const handleLogin = useCallback(
     async (payload: LoginPayload) => {
       const result = await dispatch(login(payload))
 
+      // Nếu API thành công = user có quyền truy cập
       return login.fulfilled.match(result)
     },
     [dispatch]

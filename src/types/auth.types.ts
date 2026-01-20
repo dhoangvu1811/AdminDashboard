@@ -2,27 +2,52 @@
 // Authentication Types
 // =========================================
 
-// User Role
-export type UserRole = 'user' | 'admin'
+// Role Type (for "user" | "admin" | "staff" values)
+export type UserRoleName = 'user' | 'admin' | 'staff'
 
-// User Entity
+// Role Entity (as returned from API)
+export interface Role {
+  id: number
+  name: UserRoleName
+  createdAt: string
+}
+
+// User Status
+export type UserStatus = 'active' | 'inactive'
+
+// Account Type
+export type TypeAccount = 'LOCAL' | 'GOOGLE'
+
+// User Entity (aligned with API response)
 export interface User {
   id: number
   name: string
   email: string
-  role: UserRole
-  status: 'active' | 'inactive'
+  emailVerified: boolean
+  role: Role
+  roleId: number
+  status: UserStatus
+  typeAccount: TypeAccount
   avatar?: string | null
-  phone?: string | null
+  phoneNumber?: string | null
   address?: string | null
+  dateOfBirth?: string | null
+  gender?: string | null
+  googleId?: string | null
+  activationToken?: string | null
+  lastLogin?: string | null
   createdAt: string
   updatedAt: string
 }
+
+// Login Context Type
+export type LoginContext = 'admin' | 'user'
 
 // Login Request Payload
 export interface LoginPayload {
   email: string
   password: string
+  loginContext: LoginContext
 }
 
 // Login Response from API

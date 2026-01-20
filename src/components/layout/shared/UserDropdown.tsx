@@ -20,6 +20,10 @@ import Typography from '@mui/material/Typography'
 import Divider from '@mui/material/Divider'
 import MenuItem from '@mui/material/MenuItem'
 import Button from '@mui/material/Button'
+import CircularProgress from '@mui/material/CircularProgress'
+
+// Hook Imports
+import { useAuth } from '@/hooks/useAuth'
 
 // Styled component for badge content
 const BadgeContentSpan = styled('span')({
@@ -34,12 +38,14 @@ const BadgeContentSpan = styled('span')({
 const UserDropdown = () => {
   // States
   const [open, setOpen] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   // Refs
   const anchorRef = useRef<HTMLDivElement>(null)
 
   // Hooks
   const router = useRouter()
+  const { user, logout } = useAuth()
 
   const handleDropdownOpen = () => {
     !open ? setOpen(true) : setOpen(false)
@@ -57,6 +63,38 @@ const UserDropdown = () => {
     setOpen(false)
   }
 
+  const handleLogout = async () => {
+    setIsLoggingOut(true)
+
+    try {
+      const success = await logout()
+
+      if (success) {
+        setOpen(false)
+        router.push('/login')
+      }
+    } finally {
+      setIsLoggingOut(false)
+    }
+  }
+
+  // Get user display info
+  const userName = user?.name || 'Người dùng'
+
+  const getRoleDisplayName = () => {
+    switch (user?.role?.name) {
+      case 'admin':
+        return 'Quản trị viên'
+      case 'staff':
+        return 'Nhân viên'
+      default:
+        return 'Người dùng'
+    }
+  }
+
+  const userRole = getRoleDisplayName()
+  const userAvatar = user?.avatar || '/images/avatars/1.png'
+
   return (
     <>
       <Badge
@@ -68,8 +106,8 @@ const UserDropdown = () => {
       >
         <Avatar
           ref={anchorRef}
-          alt='John Doe'
-          src='/images/avatars/1.png'
+          alt={userName}
+          src={userAvatar}
           onClick={handleDropdownOpen}
           className='cursor-pointer bs-[38px] is-[38px]'
         />
@@ -93,22 +131,22 @@ const UserDropdown = () => {
               <ClickAwayListener onClickAway={e => handleDropdownClose(e as MouseEvent | TouchEvent)}>
                 <MenuList>
                   <div className='flex items-center plb-2 pli-4 gap-2' tabIndex={-1}>
-                    <Avatar alt='John Doe' src='/images/avatars/1.png' />
+                    <Avatar alt={userName} src={userAvatar} />
                     <div className='flex items-start flex-col'>
                       <Typography className='font-medium' color='text.primary'>
-                        John Doe
+                        {userName}
                       </Typography>
-                      <Typography variant='caption'>Admin</Typography>
+                      <Typography variant='caption'>{userRole}</Typography>
                     </div>
                   </div>
                   <Divider className='mlb-1' />
                   <MenuItem className='gap-3' onClick={e => handleDropdownClose(e)}>
                     <i className='ri-user-3-line' />
-                    <Typography color='text.primary'>My Profile</Typography>
+                    <Typography color='text.primary'>Hồ sơ của tôi</Typography>
                   </MenuItem>
                   <MenuItem className='gap-3' onClick={e => handleDropdownClose(e, '/account-settings')}>
                     <i className='ri-settings-4-line' />
-                    <Typography color='text.primary'>Settings</Typography>
+                    <Typography color='text.primary'>Cài đặt</Typography>
                   </MenuItem>
                   <div className='flex items-center plb-2 pli-4'>
                     <Button
@@ -116,11 +154,18 @@ const UserDropdown = () => {
                       variant='contained'
                       color='error'
                       size='small'
-                      endIcon={<i className='ri-logout-box-r-line' />}
-                      onClick={e => handleDropdownClose(e, '/login')}
+                      disabled={isLoggingOut}
+                      endIcon={
+                        isLoggingOut ? (
+                          <CircularProgress size={16} color='inherit' />
+                        ) : (
+                          <i className='ri-logout-box-r-line' />
+                        )
+                      }
+                      onClick={handleLogout}
                       sx={{ '& .MuiButton-endIcon': { marginInlineStart: 1.5 } }}
                     >
-                      Logout
+                      {isLoggingOut ? 'Đang đăng xuất...' : 'Đăng xuất'}
                     </Button>
                   </div>
                 </MenuList>

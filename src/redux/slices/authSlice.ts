@@ -99,15 +99,8 @@ const authSlice = createSlice({
         state.error = null
       })
       .addCase(login.fulfilled, (state, action) => {
-        // Kiểm tra role admin - chỉ admin mới được đăng nhập vào Admin Dashboard
-        if (action.payload.role !== 'admin') {
-          state.isLoading = false
-          state.error = 'Bạn không có quyền truy cập Admin Dashboard'
-          toast.error('Bạn không có quyền truy cập Admin Dashboard')
-
-          return
-        }
-
+        // BE đã kiểm tra loginContext kết hợp với role (admin/staff)
+        // Nếu API thành công = user có quyền truy cập Admin Dashboard
         state.isLoading = false
         state.user = action.payload
         state.isAuthenticated = true
