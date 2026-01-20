@@ -59,6 +59,12 @@ export interface LoginResponse {
   }
 }
 
+export interface CurrentUserResponse {
+  code: number
+  message: string
+  data: User
+}
+
 // Auth State for Redux
 export interface AuthState {
   user: User | null

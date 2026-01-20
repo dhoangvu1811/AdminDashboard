@@ -152,30 +152,7 @@ axiosInstance.interceptors.response.use(
 
     // Không show toast cho lỗi 410 (đã xử lý refresh token)
     if (error.response?.status !== 410) {
-      switch (error.response?.status) {
-        case 403:
-          toast.error('Bạn không có quyền thực hiện thao tác này.')
-          break
-        case 404:
-          toast.error('Không tìm thấy dữ liệu yêu cầu.')
-          break
-        case 422:
-          // Validation errors - let the calling code handle specific field errors
-          toast.error(errorMessage)
-          break
-        case 500:
-        case 502:
-        case 503:
-          toast.error('Lỗi server. Vui lòng thử lại sau.')
-          break
-
-        default:
-          if (!error.response) {
-            toast.error('Lỗi kết nối. Vui lòng kiểm tra mạng và thử lại.')
-          } else {
-            toast.error(errorMessage)
-          }
-      }
+      toast.error(errorMessage)
     }
 
     return Promise.reject(error)

@@ -17,6 +17,11 @@ import Checkbox from '@mui/material/Checkbox'
 import Button from '@mui/material/Button'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import Divider from '@mui/material/Divider'
+import FormHelperText from '@mui/material/FormHelperText'
+
+// Third Party Imports
+import { useForm, Controller } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 
 // Type Imports
 import type { Mode } from '@core/types'
@@ -27,6 +32,7 @@ import Logo from '@components/layout/shared/Logo'
 
 // Hook Imports
 import { useImageVariant } from '@core/hooks/useImageVariant'
+import { registerSchema, type RegisterSchema } from '@/utils/rules'
 
 const Register = ({ mode }: { mode: Mode }) => {
   // States
@@ -39,7 +45,29 @@ const Register = ({ mode }: { mode: Mode }) => {
   // Hooks
   const authBackground = useImageVariant(mode, lightImg, darkImg)
 
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors }
+  } = useForm<RegisterSchema>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      username: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      agreeTerms: false
+    }
+  })
+
   const handleClickShowPassword = () => setIsPasswordShown(show => !show)
+
+  const onSubmit = async (data: RegisterSchema) => {
+    console.log('Register data:', data)
+
+    // TODO: Implement register API call
+  }
 
   return (
     <div className='flex flex-col justify-center items-center min-bs-[100dvh] relative p-6'>
@@ -51,13 +79,30 @@ const Register = ({ mode }: { mode: Mode }) => {
           <Typography variant='h4'>Adventure starts here 🚀</Typography>
           <div className='flex flex-col gap-5'>
             <Typography className='mbs-1'>Make your app management easy and fun!</Typography>
-            <form noValidate autoComplete='off' onSubmit={e => e.preventDefault()} className='flex flex-col gap-5'>
-              <TextField autoFocus fullWidth label='Username' />
-              <TextField fullWidth label='Email' />
+            <form noValidate autoComplete='off' onSubmit={handleSubmit(onSubmit)} className='flex flex-col gap-5'>
+              <TextField
+                autoFocus
+                fullWidth
+                label='Username'
+                {...register('username')}
+                error={!!errors.username}
+                helperText={errors.username?.message}
+              />
+              <TextField
+                fullWidth
+                label='Email'
+                type='email'
+                {...register('email')}
+                error={!!errors.email}
+                helperText={errors.email?.message}
+              />
               <TextField
                 fullWidth
                 label='Password'
                 type={isPasswordShown ? 'text' : 'password'}
+                {...register('password')}
+                error={!!errors.password}
+                helperText={errors.password?.message}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position='end'>
@@ -73,17 +118,34 @@ const Register = ({ mode }: { mode: Mode }) => {
                   )
                 }}
               />
-              <FormControlLabel
-                control={<Checkbox />}
-                label={
-                  <>
-                    <span>I agree to </span>
-                    <Link className='text-primary' href='/' onClick={e => e.preventDefault()}>
-                      privacy policy & terms
-                    </Link>
-                  </>
-                }
+              <TextField
+                fullWidth
+                label='Confirm Password'
+                type={isPasswordShown ? 'text' : 'password'}
+                {...register('confirmPassword')}
+                error={!!errors.confirmPassword}
+                helperText={errors.confirmPassword?.message}
               />
+              <div>
+                <Controller
+                  name='agreeTerms'
+                  control={control}
+                  render={({ field }) => (
+                    <FormControlLabel
+                      control={<Checkbox {...field} checked={field.value} />}
+                      label={
+                        <>
+                          <span>I agree to </span>
+                          <Link className='text-primary' href='/' onClick={e => e.preventDefault()}>
+                            privacy policy & terms
+                          </Link>
+                        </>
+                      }
+                    />
+                  )}
+                />
+                {errors.agreeTerms && <FormHelperText error>{errors.agreeTerms.message}</FormHelperText>}
+              </div>
               <Button fullWidth variant='contained' type='submit'>
                 Sign Up
               </Button>

@@ -45,7 +45,7 @@ const UserDropdown = () => {
 
   // Hooks
   const router = useRouter()
-  const { user, logout } = useAuth()
+  const { user, logout, refreshUser } = useAuth()
 
   const handleDropdownOpen = () => {
     !open ? setOpen(true) : setOpen(false)
@@ -143,6 +143,16 @@ const UserDropdown = () => {
                   <MenuItem className='gap-3' onClick={e => handleDropdownClose(e)}>
                     <i className='ri-user-3-line' />
                     <Typography color='text.primary'>Hồ sơ của tôi</Typography>
+                  </MenuItem>
+                  <MenuItem
+                    className='gap-3'
+                    onClick={async e => {
+                      await refreshUser()
+                      handleDropdownClose(e)
+                    }}
+                  >
+                    <i className='ri-refresh-line' />
+                    <Typography color='text.primary'>Làm mới dữ liệu</Typography>
                   </MenuItem>
                   <MenuItem className='gap-3' onClick={e => handleDropdownClose(e, '/account-settings')}>
                     <i className='ri-settings-4-line' />

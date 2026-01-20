@@ -2,7 +2,6 @@
 
 // React Imports
 import { useState, useEffect } from 'react'
-import type { FormEvent, ChangeEvent } from 'react'
 
 // Next Imports
 import Link from 'next/link'
@@ -22,6 +21,10 @@ import Divider from '@mui/material/Divider'
 import Alert from '@mui/material/Alert'
 import CircularProgress from '@mui/material/CircularProgress'
 
+// Third Party Imports
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+
 // Type Imports
 import type { Mode } from '@core/types'
 
@@ -35,29 +38,12 @@ import themeConfig from '@configs/themeConfig'
 // Hook Imports
 import { useImageVariant } from '@core/hooks/useImageVariant'
 import { useAuth } from '@/hooks/useAuth'
-
-// Form State Interface
-interface LoginFormData {
-  email: string
-  password: string
-}
-
-interface FormErrors {
-  email?: string
-  password?: string
-}
+import { loginSchema, type LoginSchema } from '@/utils/rules'
 
 const Login = ({ mode }: { mode: Mode }) => {
   // States
   const [isPasswordShown, setIsPasswordShown] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
-
-  const [formData, setFormData] = useState<LoginFormData>({
-    email: '',
-    password: ''
-  })
-
-  const [formErrors, setFormErrors] = useState<FormErrors>({})
 
   // Vars
   const darkImg = '/images/pages/auth-v1-mask-dark.png'
@@ -68,6 +54,18 @@ const Login = ({ mode }: { mode: Mode }) => {
   const authBackground = useImageVariant(mode, lightImg, darkImg)
   const { login, isLoading, isAuthenticated, error, clearError } = useAuth()
 
+  const {
+    register,
+    handleSubmit,
+    formState: { errors }
+  } = useForm<LoginSchema>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: ''
+    }
+  })
+
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
@@ -76,58 +74,16 @@ const Login = ({ mode }: { mode: Mode }) => {
   }, [isAuthenticated, router])
 
   // Clear error when form data changes
-  useEffect(() => {
-    if (error) {
-      clearError()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData])
-
+  // Note: RHF handles error clearing for fields automatically.
+  // We only need to clear the global auth error (like "Invalid credentials")
   const handleClickShowPassword = () => setIsPasswordShown(show => !show)
 
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-
-    setFormData(prev => ({ ...prev, [name]: value }))
-
-    // Clear field error when user types
-    if (formErrors[name as keyof FormErrors]) {
-      setFormErrors(prev => ({ ...prev, [name]: undefined }))
-    }
-  }
-
-  const validateForm = (): boolean => {
-    const errors: FormErrors = {}
-
-    // Email validation
-    if (!formData.email.trim()) {
-      errors.email = 'Email là bắt buộc'
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      errors.email = 'Email không hợp lệ'
-    }
-
-    // Password validation
-    if (!formData.password) {
-      errors.password = 'Mật khẩu là bắt buộc'
-    } else if (formData.password.length < 6) {
-      errors.password = 'Mật khẩu phải có ít nhất 6 ký tự'
-    }
-
-    setFormErrors(errors)
-
-    return Object.keys(errors).length === 0
-  }
-
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-
-    if (!validateForm()) {
-      return
-    }
+  const onSubmit = async (data: LoginSchema) => {
+    if (error) clearError()
 
     const success = await login({
-      email: formData.email,
-      password: formData.password,
+      email: data.email,
+      password: data.password,
       loginContext: 'admin'
     })
 
@@ -156,29 +112,25 @@ const Login = ({ mode }: { mode: Mode }) => {
               </Alert>
             )}
 
-            <form noValidate autoComplete='off' onSubmit={handleSubmit} className='flex flex-col gap-5'>
+            <form noValidate autoComplete='off' onSubmit={handleSubmit(onSubmit)} className='flex flex-col gap-5'>
               <TextField
                 autoFocus
                 fullWidth
                 label='Email'
-                name='email'
                 type='email'
-                value={formData.email}
-                onChange={handleInputChange}
-                error={!!formErrors.email}
-                helperText={formErrors.email}
+                {...register('email')}
+                error={!!errors.email}
+                helperText={errors.email?.message}
                 disabled={isLoading}
               />
               <TextField
                 fullWidth
                 label='Mật khẩu'
-                name='password'
                 id='outlined-adornment-password'
                 type={isPasswordShown ? 'text' : 'password'}
-                value={formData.password}
-                onChange={handleInputChange}
-                error={!!formErrors.password}
-                helperText={formErrors.password}
+                {...register('password')}
+                error={!!errors.password}
+                helperText={errors.password?.message}
                 disabled={isLoading}
                 InputProps={{
                   endAdornment: (

@@ -59,7 +59,7 @@ export const checkAuth = createAsyncThunk('auth/checkAuth', async (_, { rejectWi
   try {
     const response = await authService.getCurrentUser()
 
-    return response.data.user
+    return response.data
   } catch {
     // Silent fail - user is not authenticated
     return rejectWithValue(null)

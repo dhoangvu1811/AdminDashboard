@@ -3,7 +3,7 @@
 import { useCallback } from 'react'
 
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
-import { login, logout, clearAuth, clearError } from '@/redux/slices/authSlice'
+import { login, logout, clearAuth, clearError, checkAuth } from '@/redux/slices/authSlice'
 import type { LoginPayload } from '@/types/auth.types'
 
 /**
@@ -44,6 +44,11 @@ export function useAuth() {
     dispatch(clearError())
   }, [dispatch])
 
+  // Refresh user data manually
+  const handleRefresh = useCallback(async () => {
+    await dispatch(checkAuth())
+  }, [dispatch])
+
   return {
     // State
     user,
@@ -55,6 +60,7 @@ export function useAuth() {
     // Actions
     login: handleLogin,
     logout: handleLogout,
+    refreshUser: handleRefresh,
     clearAuth: handleClearAuth,
     clearError: handleClearError
   }

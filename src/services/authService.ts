@@ -1,5 +1,5 @@
 import { axiosInstance, API_ENDPOINTS } from '@/libs/api'
-import type { LoginPayload, LoginResponse, LogoutResponse } from '@/types/auth.types'
+import type { LoginPayload, LoginResponse, LogoutResponse, CurrentUserResponse } from '@/types/auth.types'
 
 /**
  * Authentication Service
@@ -38,8 +38,8 @@ export const authService = {
    * Get current authenticated user info
    * Can be used to verify if user is still logged in
    */
-  getCurrentUser: async (): Promise<LoginResponse> => {
-    const response = await axiosInstance.get<LoginResponse>(API_ENDPOINTS.USERS.ME)
+  getCurrentUser: async (): Promise<CurrentUserResponse> => {
+    const response = await axiosInstance.get<CurrentUserResponse>(API_ENDPOINTS.USERS.ME)
 
     return response.data
   }
