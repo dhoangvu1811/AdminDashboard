@@ -15,11 +15,14 @@ export interface UserFilters extends SearchParams {
 }
 
 // User List Response
+// User List Response
 export interface UserListResponse {
   success: boolean
   message: string
-  data: User[]
-  pagination: PaginationInfo
+  data: {
+    users: User[]
+    pagination: PaginationInfo
+  }
 }
 
 // User Detail Response
@@ -34,9 +37,13 @@ export interface CreateUserPayload {
   name: string
   email: string
   password: string
-  role: UserRoleName
-  phone?: string
+  confirmPassword?: string
+  phoneNumber?: string
   address?: string
+  dateOfBirth?: string
+  gender?: string
+  role: UserRoleName
+  emailVerified?: boolean
 }
 
 // Update User Payload
@@ -44,15 +51,20 @@ export interface UpdateUserPayload {
   name?: string
   email?: string
   password?: string
-  role?: UserRoleName
-  phone?: string
+  phoneNumber?: string
   address?: string
   avatar?: string
+  status?: 'active' | 'inactive'
 }
 
 // Delete Multiple Users Payload
 export interface DeleteMultipleUsersPayload {
-  userIds: number[]
+  userIds: string[]
+}
+
+// Change Role Payload
+export interface ChangeRolePayload {
+  roleId: number
 }
 
 // User Overview Response
@@ -71,19 +83,31 @@ export interface UserOverviewResponse {
 
 // Session Types
 export interface Session {
-  id: string
-  userId: number
-  userAgent: string
+  sessionId: string
+  deviceInfo: string
   ipAddress: string
-  lastActivity: string
   createdAt: string
   expiresAt: string
+  logoutAt: string | null
+  isActive: boolean
+  isExpired: boolean
+  status: string
 }
 
 export interface SessionListResponse {
-  success: boolean
+  code: number
   message: string
-  data: Session[]
+  data: {
+    userId: string
+    sessions: Session[]
+    summary?: {
+      active: number
+      revoked: number
+      expired: number
+      logout: number
+    }
+    total?: number
+  }
 }
 
 export interface RevokeSessionPayload {

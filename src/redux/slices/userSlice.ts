@@ -8,6 +8,7 @@ import type {
   CreateUserPayload,
   UpdateUserPayload,
   DeleteMultipleUsersPayload,
+  ChangeRolePayload,
   RevokeSessionPayload
 } from '@/types/user.types'
 
@@ -44,7 +45,14 @@ export const fetchUsers = createAsyncThunk('users/fetchAll', async (filters: Use
   try {
     const response = await userService.getAll(filters)
 
-    return { users: response.data, pagination: response.pagination, filters }
+    const paginationData = {
+      page: response.data.pagination.page,
+      limit: (response.data.pagination as any).itemsPerPage || response.data.pagination.limit,
+      total: (response.data.pagination as any).totalUsers || response.data.pagination.total,
+      totalPages: response.data.pagination.totalPages
+    }
+
+    return { users: response.data.users, pagination: paginationData, filters }
   } catch (error: unknown) {
     const err = error as { response?: { data?: { message?: string } } }
 
@@ -182,6 +190,24 @@ export const deactivateUser = createAsyncThunk(
 )
 
 /**
+ * Change user role
+ */
+export const changeUserRole = createAsyncThunk(
+  'users/changeRole',
+  async ({ userId, payload }: { userId: number | string; payload: ChangeRolePayload }, { rejectWithValue }) => {
+    try {
+      const response = await userService.changeRole(userId, payload)
+
+      return response.data
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } }
+
+      return rejectWithValue(err.response?.data?.message || 'Không thể thay đổi vai trò')
+    }
+  }
+)
+
+/**
  * Fetch user sessions
  */
 export const fetchUserSessions = createAsyncThunk(
@@ -190,7 +216,7 @@ export const fetchUserSessions = createAsyncThunk(
     try {
       const response = await userService.getSessions(userId)
 
-      return response.data
+      return response.data.sessions
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } } }
 
@@ -380,7 +406,7 @@ const userSlice = createSlice({
       })
       .addCase(deleteMultipleUsers.fulfilled, (state, action) => {
         state.isLoading = false
-        state.users = state.users.filter(u => !action.payload.includes(u.id))
+        state.users = state.users.filter(u => !action.payload.includes(String(u.id)))
         state.pagination.total -= action.payload.length
         toast.success(`Đã xóa ${action.payload.length} người dùng!`)
       })
@@ -431,6 +457,27 @@ const userSlice = createSlice({
         state.error = action.payload as string
       })
 
+    // Change User Role
+    builder
+      .addCase(changeUserRole.pending, state => {
+        state.isLoading = true
+      })
+      .addCase(changeUserRole.fulfilled, (state, action) => {
+        state.isLoading = false
+
+        const index = state.users.findIndex(u => u.id === action.payload.id)
+
+        if (index !== -1) {
+          state.users[index] = action.payload
+        }
+
+        toast.success('Thay đổi vai trò thành công!')
+      })
+      .addCase(changeUserRole.rejected, (state, action) => {
+        state.isLoading = false
+        state.error = action.payload as string
+      })
+
     // Fetch Sessions
     builder
       .addCase(fetchUserSessions.pending, state => {
@@ -452,7 +499,7 @@ const userSlice = createSlice({
       })
       .addCase(revokeSession.fulfilled, (state, action) => {
         state.isLoadingSessions = false
-        state.sessions = state.sessions.filter(s => s.id !== action.payload)
+        state.sessions = state.sessions.filter(s => s.sessionId !== action.payload)
         toast.success('Thu hồi phiên thành công!')
       })
       .addCase(revokeSession.rejected, (state, action) => {

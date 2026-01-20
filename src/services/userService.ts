@@ -7,6 +7,7 @@ import type {
   CreateUserPayload,
   UpdateUserPayload,
   DeleteMultipleUsersPayload,
+  ChangeRolePayload,
   UserFilters,
   SessionListResponse,
   RevokeSessionPayload
@@ -25,8 +26,10 @@ export const userService = {
    * Get all users with pagination and filters
    */
   getAll: async (filters: UserFilters = {}): Promise<UserListResponse> => {
+    const params: Record<string, any> = { ...filters }
+
     const response = await axiosInstance.get<UserListResponse>(API_ENDPOINTS.USERS.ALL, {
-      params: filters
+      params
     })
 
     return response.data
@@ -108,6 +111,15 @@ export const userService = {
     return response.data
   },
 
+  /**
+   * Change user role
+   */
+  changeRole: async (userId: number | string, payload: ChangeRolePayload): Promise<UserDetailResponse> => {
+    const response = await axiosInstance.patch<UserDetailResponse>(API_ENDPOINTS.USERS.CHANGE_ROLE(userId), payload)
+
+    return response.data
+  },
+
   // =========================================
   // Session Management
   // =========================================
@@ -135,6 +147,19 @@ export const userService = {
    */
   revokeAllSessions: async (userId: number | string): Promise<ApiResponse> => {
     const response = await axiosInstance.delete<ApiResponse>(API_ENDPOINTS.SESSIONS.REVOKE_ALL_SESSIONS(userId))
+
+    return response.data
+  },
+
+  /**
+   * Update current user profile
+   */
+  updateProfile: async (payload: FormData): Promise<UserDetailResponse> => {
+    const response = await axiosInstance.put<UserDetailResponse>(API_ENDPOINTS.USERS.UPDATE_PROFILE, payload, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
 
     return response.data
   }
