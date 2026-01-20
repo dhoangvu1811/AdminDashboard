@@ -10,17 +10,21 @@ import Typography from '@mui/material/Typography'
 import TextField from '@mui/material/TextField'
 import Button from '@mui/material/Button'
 
+// Third Party Imports
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+
 // Type Imports
 import type { Mode } from '@core/types'
 
 // Component Imports
-import Form from '@components/Form'
 import DirectionalIcon from '@components/DirectionalIcon'
 import Illustrations from '@components/Illustrations'
 import Logo from '@components/layout/shared/Logo'
 
 // Hook Imports
 import { useImageVariant } from '@core/hooks/useImageVariant'
+import { forgotPasswordSchema, type ForgotPasswordSchema } from '@/utils/rules'
 
 const ForgotPassword = ({ mode }: { mode: Mode }) => {
   // Vars
@@ -29,6 +33,23 @@ const ForgotPassword = ({ mode }: { mode: Mode }) => {
 
   // Hooks
   const authBackground = useImageVariant(mode, lightImg, darkImg)
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors }
+  } = useForm<ForgotPasswordSchema>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: {
+      email: ''
+    }
+  })
+
+  const onSubmit = async (data: ForgotPasswordSchema) => {
+    console.log('Forgot password email:', data.email)
+
+    // TODO: Implement forgot password API call
+  }
 
   return (
     <div className='flex flex-col justify-center items-center min-bs-[100dvh] relative p-6'>
@@ -42,8 +63,16 @@ const ForgotPassword = ({ mode }: { mode: Mode }) => {
             <Typography className='mbs-1'>
               Enter your email and we&#39;ll send you instructions to reset your password
             </Typography>
-            <Form noValidate autoComplete='off' className='flex flex-col gap-5'>
-              <TextField autoFocus fullWidth label='Email' />
+            <form noValidate autoComplete='off' onSubmit={handleSubmit(onSubmit)} className='flex flex-col gap-5'>
+              <TextField
+                autoFocus
+                fullWidth
+                label='Email'
+                type='email'
+                {...register('email')}
+                error={!!errors.email}
+                helperText={errors.email?.message}
+              />
               <Button fullWidth variant='contained' type='submit'>
                 Send reset link
               </Button>
@@ -53,7 +82,7 @@ const ForgotPassword = ({ mode }: { mode: Mode }) => {
                   <span>Back to Login</span>
                 </Link>
               </Typography>
-            </Form>
+            </form>
           </div>
         </CardContent>
       </Card>

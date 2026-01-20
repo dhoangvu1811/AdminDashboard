@@ -13,13 +13,23 @@ export const API_ENDPOINTS = {
   USERS: {
     ALL: '/users/all',
     OVERVIEW: '/users/overview',
+    ME: '/users/me',
+    UPDATE_PROFILE: '/users/me',
     DETAILS: (id: number | string) => `/users/details/${id}`,
     CREATE: '/users/create',
     UPDATE: (id: number | string) => `/users/update/${id}`,
     DELETE: (id: number | string) => `/users/delete/${id}`,
     DELETE_MULTIPLE: '/users/delete-multiple',
     ACTIVATE: (id: number | string) => `/users/activate/${id}`,
-    DEACTIVATE: (id: number | string) => `/users/deactivate/${id}`
+    DEACTIVATE: (id: number | string) => `/users/deactivate/${id}`,
+    CHANGE_ROLE: (id: number | string) => `/users/${id}/role`
+  },
+
+  // Session Management
+  SESSIONS: {
+    GET_USER_SESSIONS: (userId: number | string) => `/users/sessions/${userId}`,
+    REVOKE_SESSION: '/users/revoke-session',
+    REVOKE_ALL_SESSIONS: (userId: number | string) => `/users/revoke-all-sessions/${userId}`
   },
 
   // Product Management

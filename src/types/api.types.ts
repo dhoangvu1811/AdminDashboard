@@ -29,6 +29,7 @@ export interface ApiError {
 export interface PaginationParams {
   page?: number
   limit?: number
+  itemsPerPage?: number
 }
 
 export interface SearchParams extends PaginationParams {
