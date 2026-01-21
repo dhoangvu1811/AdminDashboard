@@ -70,6 +70,9 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
           <MenuItem href='/users' icon={<i className='ri-user-star-line' />}>
             User Management
           </MenuItem>
+          <MenuItem href='/products' icon={<i className='ri-shopping-bag-3-line' />}>
+            Product Management
+          </MenuItem>
           <MenuItem href='/account-settings' icon={<i className='ri-user-settings-line' />}>
             Account Settings
           </MenuItem>
