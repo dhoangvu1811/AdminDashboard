@@ -3,8 +3,8 @@ import { configureStore } from '@reduxjs/toolkit'
 // Import slices
 import authReducer from './slices/authSlice'
 import userReducer from './slices/userSlice'
+import productReducer from './slices/productSlice'
 
-// import productReducer from './slices/productSlice'
 // import orderReducer from './slices/orderSlice'
 // import voucherReducer from './slices/voucherSlice'
 // import contactReducer from './slices/contactSlice'
@@ -12,9 +12,9 @@ import userReducer from './slices/userSlice'
 export const store = configureStore({
   reducer: {
     auth: authReducer,
-    users: userReducer
+    users: userReducer,
+    products: productReducer
 
-    // products: productReducer,
     // orders: orderReducer,
     // vouchers: voucherReducer,
     // contacts: contactReducer,

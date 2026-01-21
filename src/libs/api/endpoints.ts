@@ -34,10 +34,13 @@ export const API_ENDPOINTS = {
 
   // Product Management
   PRODUCTS: {
+    ALL: '/products/getAll',
+    GET_ALL_CATEGORIES: '/products/get-all-categories',
+    DETAILS: (id: number | string) => `/products/details/${id}`,
     CREATE: '/products/create',
     UPDATE: (id: number | string) => `/products/update/${id}`,
     DELETE: (id: number | string) => `/products/delete/${id}`,
-    DELETE_SELECTED: '/products/deleteSelected',
+    DELETE_MULTIPLE: '/products/deleteSelected',
     UPLOAD_IMAGE: '/products/upload-image'
   },
 
