@@ -95,3 +95,15 @@ export type UserEditSchema = z.infer<typeof userEditSchema>
 export type RegisterSchema = z.infer<typeof registerSchema>
 export type ForgotPasswordSchema = z.infer<typeof forgotPasswordSchema>
 export type ProductSchema = z.infer<typeof productSchema>
+
+export const categorySchema = z.object({
+  name: z.string().min(2, 'Tên danh mục phải có ít nhất 2 ký tự').max(100, 'Tên danh mục không được quá 100 ký tự'),
+  description: z.string().max(1000, 'Mô tả không được quá 1000 ký tự').optional(),
+  // Image handling in form
+  image: z
+    .union([z.instanceof(File), z.string()])
+    .optional()
+    .nullable()
+})
+
+export type CategorySchema = z.infer<typeof categorySchema>

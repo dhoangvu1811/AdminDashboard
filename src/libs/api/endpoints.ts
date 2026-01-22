@@ -44,6 +44,16 @@ export const API_ENDPOINTS = {
     UPLOAD_IMAGE: '/products/upload-image'
   },
 
+  // Category Management
+  CATEGORIES: {
+    ALL: '/categories',
+    DETAILS: (id: number | string) => `/categories/${id}`,
+    CREATE: '/categories',
+    UPDATE: (id: number | string) => `/categories/${id}`,
+    DELETE: (id: number | string) => `/categories/${id}`,
+    DELETE_MANY: '/categories/delete-many'
+  },
+
   // Order Management
   ORDERS: {
     ALL: '/orders/all',
