@@ -76,6 +76,31 @@ export const API_ENDPOINTS = {
   // Contact/Social
   CONTACTS: {
     ALL: '/contacts'
+  },
+
+  // Role Management
+  ROLES: {
+    ALL: '/roles',
+    DETAILS: (id: number | string) => `/roles/${id}`,
+    CREATE: '/roles',
+    UPDATE: (id: number | string) => `/roles/${id}`,
+    DELETE: (id: number | string) => `/roles/${id}`,
+    // Role Permissions
+    GET_PERMISSIONS: (id: number | string) => `/roles/${id}/permissions`,
+    ASSIGN_PERMISSION: (id: number | string) => `/roles/${id}/permissions`,
+    BULK_ASSIGN_PERMISSIONS: (id: number | string) => `/roles/${id}/permissions/bulk`,
+    REMOVE_PERMISSION: (id: number | string, permissionId: number | string) =>
+      `/roles/${id}/permissions/${permissionId}`
+  },
+
+  // Permission Management
+  PERMISSIONS: {
+    ALL: '/permissions',
+    ME: '/permissions/me',
+    DETAILS: (id: number | string) => `/permissions/${id}`,
+    CREATE: '/permissions',
+    UPDATE: (id: number | string) => `/permissions/${id}`,
+    DELETE: (id: number | string) => `/permissions/${id}`
   }
 } as const
 

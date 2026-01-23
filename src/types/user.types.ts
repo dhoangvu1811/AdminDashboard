@@ -42,7 +42,7 @@ export interface CreateUserPayload {
   address?: string
   dateOfBirth?: string
   gender?: string
-  role: UserRoleName
+  roleId: number
   emailVerified?: boolean
 }
 
