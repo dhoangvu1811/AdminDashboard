@@ -17,6 +17,9 @@ import Select from '@mui/material/Select'
 import MenuItem from '@mui/material/MenuItem'
 import CircularProgress from '@mui/material/CircularProgress'
 import FormHelperText from '@mui/material/FormHelperText'
+import Chip from '@mui/material/Chip'
+import Divider from '@mui/material/Divider'
+import Alert from '@mui/material/Alert'
 
 // Third-party Imports
 import toast from 'react-hot-toast'
@@ -26,13 +29,17 @@ import { zodResolver } from '@hookform/resolvers/zod'
 // Redux Imports
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
 import { checkAuth } from '@/redux/slices/authSlice'
+import { fetchMyPermissions } from '@/redux/slices/permissionSlice'
 import { userService } from '@/services/userService'
 import { profileSchema, type ProfileSchema } from '@/utils/rules'
+import { isAdmin } from '@/utils/checkPermission'
 
 const AccountDetails = () => {
   // Hooks
   const dispatch = useAppDispatch()
   const { user } = useAppSelector(state => state.auth)
+  const { myPermissions } = useAppSelector(state => state.permissions)
+  const isUserAdmin = isAdmin(user)
 
   // States
   const [fileInput, setFileInput] = useState<File | null>(null)
@@ -55,6 +62,10 @@ const AccountDetails = () => {
       gender: ''
     }
   })
+
+  useEffect(() => {
+    dispatch(fetchMyPermissions())
+  }, [dispatch])
 
   useEffect(() => {
     if (user) {
@@ -120,7 +131,7 @@ const AccountDetails = () => {
 
   const handleRefresh = async () => {
     setIsLoading(true)
-    await dispatch(checkAuth())
+    await Promise.all([dispatch(checkAuth()), dispatch(fetchMyPermissions())])
     setIsLoading(false)
   }
 
@@ -228,6 +239,35 @@ const AccountDetails = () => {
                 error={!!errors.address}
                 helperText={errors.address?.message}
               />
+            </Grid>
+
+            {/* My Permissions Section */}
+            <Grid item xs={12}>
+              <Divider sx={{ mb: 4 }} />
+              <Typography variant='h6' sx={{ mb: 2 }}>
+                Quyền hạn của tôi
+              </Typography>
+              {isUserAdmin ? (
+                <Alert severity='info' sx={{ mb: 2 }}>
+                  Bạn là <strong>Quản trị viên</strong> và có toàn quyền truy cập hệ thống.
+                </Alert>
+              ) : myPermissions.length > 0 ? (
+                <div className='flex flex-wrap gap-2'>
+                  {myPermissions.map(permission => (
+                    <Chip
+                      key={permission.id}
+                      label={permission.displayName}
+                      color='primary'
+                      variant='outlined'
+                      size='small'
+                    />
+                  ))}
+                </div>
+              ) : (
+                <Typography variant='body2' color='text.secondary'>
+                  Bạn chưa được cấp quyền hạn nào.
+                </Typography>
+              )}
             </Grid>
 
             <Grid item xs={12} className='flex gap-4 flex-wrap'>
