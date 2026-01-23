@@ -28,7 +28,7 @@ export const userCreateSchema = z
     password: passwordSchema,
     confirmPassword: z.string().min(1, 'Vui lòng xác nhận mật khẩu'),
     phoneNumber: phoneSchema,
-    role: z.enum(['admin', 'staff', 'user']),
+    role: z.coerce.number().min(1, 'Vui lòng chọn vai trò'),
     gender: z.string(),
     address: z.string().optional(),
     dateOfBirth: z.string().optional(),
@@ -107,3 +107,25 @@ export const categorySchema = z.object({
 })
 
 export type CategorySchema = z.infer<typeof categorySchema>
+
+export const roleSchema = z.object({
+  name: z
+    .string()
+    .min(2, 'Tên vai trò phải có ít nhất 2 ký tự')
+    .max(50, 'Tên vai trò không được quá 50 ký tự')
+    .regex(/^[a-z_]+$/, 'Tên vai trò chỉ được chứa chữ thường và dấu gạch dưới'),
+  displayName: z.string().min(2, 'Tên hiển thị phải có ít nhất 2 ký tự')
+})
+
+export type RoleSchema = z.infer<typeof roleSchema>
+
+export const permissionSchema = z.object({
+  name: z
+    .string()
+    .min(2, 'Tên quyền hạn phải có ít nhất 2 ký tự')
+    .max(100, 'Tên quyền hạn không được quá 100 ký tự')
+    .regex(/^[a-z_]+$/, 'Tên quyền hạn chỉ được chứa chữ thường và dấu gạch dưới'),
+  displayName: z.string().min(2, 'Tên hiển thị phải có ít nhất 2 ký tự')
+})
+
+export type PermissionSchema = z.infer<typeof permissionSchema>
