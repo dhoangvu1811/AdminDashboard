@@ -5,6 +5,8 @@ import authReducer from './slices/authSlice'
 import userReducer from './slices/userSlice'
 import productReducer from './slices/productSlice'
 import categoryReducer from './slices/categorySlice'
+import roleReducer from './slices/roleSlice'
+import permissionReducer from './slices/permissionSlice'
 
 // import orderReducer from './slices/orderSlice'
 // import voucherReducer from './slices/voucherSlice'
@@ -15,7 +17,9 @@ export const store = configureStore({
     auth: authReducer,
     users: userReducer,
     products: productReducer,
-    categories: categoryReducer
+    categories: categoryReducer,
+    roles: roleReducer,
+    permissions: permissionReducer
 
     // orders: orderReducer,
     // vouchers: voucherReducer,
