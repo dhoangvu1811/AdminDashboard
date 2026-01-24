@@ -4,6 +4,7 @@ import { useEffect, createContext, useContext, type ReactNode } from 'react'
 
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
 import { checkAuth } from '@/redux/slices/authSlice'
+import { fetchMyPermissions } from '@/redux/slices/permissionSlice'
 
 interface AuthContextType {
   isCheckingAuth: boolean
@@ -31,6 +32,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // Empty deps - only run once on mount
+
+  // Fetch permissions when user is authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      dispatch(fetchMyPermissions())
+    }
+  }, [dispatch, isAuthenticated])
 
   return <AuthContext.Provider value={{ isCheckingAuth }}>{children}</AuthContext.Provider>
 }
