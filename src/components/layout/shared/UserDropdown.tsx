@@ -3,6 +3,7 @@
 // React Imports
 import { useRef, useState } from 'react'
 import type { MouseEvent } from 'react'
+import { toast } from 'react-hot-toast'
 
 // Next Imports
 import { useRouter } from 'next/navigation'
@@ -22,8 +23,10 @@ import MenuItem from '@mui/material/MenuItem'
 import Button from '@mui/material/Button'
 import CircularProgress from '@mui/material/CircularProgress'
 
-// Hook Imports
+// Hook & Store Imports
 import { useAuth } from '@/hooks/useAuth'
+import { useAppDispatch } from '@/redux/hooks'
+import { fetchMyPermissions } from '@/redux/slices/permissionSlice'
 
 // Styled component for badge content
 const BadgeContentSpan = styled('span')({
@@ -45,6 +48,7 @@ const UserDropdown = () => {
 
   // Hooks
   const router = useRouter()
+  const dispatch = useAppDispatch()
   const { user, logout, refreshUser } = useAuth()
 
   const handleDropdownOpen = () => {
@@ -75,6 +79,15 @@ const UserDropdown = () => {
       }
     } finally {
       setIsLoggingOut(false)
+    }
+  }
+
+  const handleRefreshData = async () => {
+    try {
+      await Promise.all([refreshUser(), dispatch(fetchMyPermissions()).unwrap()])
+      toast.success('Đã cập nhật dữ liệu')
+    } catch (error) {
+      toast.error('Lỗi cập nhật dữ liệu')
     }
   }
 
@@ -140,24 +153,24 @@ const UserDropdown = () => {
                     </div>
                   </div>
                   <Divider className='mlb-1' />
-                  <MenuItem className='gap-3' onClick={e => handleDropdownClose(e)}>
+                  <MenuItem className='gap-3' onClick={e => handleDropdownClose(e, '/account-settings')}>
                     <i className='ri-user-3-line' />
                     <Typography color='text.primary'>Hồ sơ của tôi</Typography>
                   </MenuItem>
                   <MenuItem
                     className='gap-3'
                     onClick={async e => {
-                      await refreshUser()
+                      await handleRefreshData()
                       handleDropdownClose(e)
                     }}
                   >
                     <i className='ri-refresh-line' />
                     <Typography color='text.primary'>Làm mới dữ liệu</Typography>
                   </MenuItem>
-                  <MenuItem className='gap-3' onClick={e => handleDropdownClose(e, '/account-settings')}>
+                  {/* <MenuItem className='gap-3' onClick={e => handleDropdownClose(e, '/account-settings')}>
                     <i className='ri-settings-4-line' />
                     <Typography color='text.primary'>Cài đặt</Typography>
-                  </MenuItem>
+                  </MenuItem> */}
                   <div className='flex items-center plb-2 pli-4'>
                     <Button
                       fullWidth
