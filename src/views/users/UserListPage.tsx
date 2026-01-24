@@ -34,6 +34,7 @@ import Tooltip from '@mui/material/Tooltip'
 // Redux Imports
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
 import { fetchUsers, deleteUser, deleteMultipleUsers, activateUser, deactivateUser } from '@/redux/slices/userSlice'
+import { fetchRoles } from '@/redux/slices/roleSlice'
 import type { UserFilters } from '@/types/user.types'
 import type { User } from '@/types/auth.types'
 import { useDebounce } from '@/hooks'
@@ -48,6 +49,7 @@ const UserListPage = () => {
   const router = useRouter()
   const dispatch = useAppDispatch()
   const { users, pagination, isLoading, error } = useAppSelector(state => state.users)
+  const { roles } = useAppSelector(state => state.roles)
 
   // Filter states
   const [search, setSearch] = useState('')
@@ -87,7 +89,8 @@ const UserListPage = () => {
 
   useEffect(() => {
     loadUsers()
-  }, [loadUsers])
+    dispatch(fetchRoles())
+  }, [loadUsers, dispatch])
 
   // Handlers
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -217,6 +220,8 @@ const UserListPage = () => {
         return 'error'
       case 'staff':
         return 'warning'
+      case 'user':
+        return 'info'
       default:
         return 'default'
     }
@@ -282,9 +287,11 @@ const UserListPage = () => {
               onChange={e => handleRoleFilterChange(e as React.ChangeEvent<{ value: unknown }>)}
             >
               <MenuItem value=''>Tất cả</MenuItem>
-              <MenuItem value='admin'>Quản trị viên</MenuItem>
-              <MenuItem value='staff'>Nhân viên</MenuItem>
-              <MenuItem value='user'>Người dùng</MenuItem>
+              {roles.map(role => (
+                <MenuItem key={role.id} value={role.name}>
+                  {role.displayName}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
           <FormControl size='small' sx={{ minWidth: 150 }}>
@@ -354,13 +361,7 @@ const UserListPage = () => {
                     <TableCell>{user.email}</TableCell>
                     <TableCell>
                       <Chip
-                        label={
-                          user.role?.name === 'admin'
-                            ? 'Quản trị viên'
-                            : user.role?.name === 'staff'
-                              ? 'Nhân viên'
-                              : 'Người dùng'
-                        }
+                        label={user.role?.displayName || user.role?.name || 'Không xác định'}
                         color={getRoleColor(user.role?.name || 'user')}
                         size='small'
                       />

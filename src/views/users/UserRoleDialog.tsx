@@ -18,6 +18,7 @@ import CircularProgress from '@mui/material/CircularProgress'
 // Redux Imports
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
 import { changeUserRole } from '@/redux/slices/userSlice'
+import { fetchRoles } from '@/redux/slices/roleSlice'
 import type { User } from '@/types/auth.types'
 
 interface UserRoleDialogProps {
@@ -27,28 +28,29 @@ interface UserRoleDialogProps {
   onSuccess: () => void
 }
 
-const ROLES = [
-  { id: 1, name: 'admin', label: 'Quản trị viên' },
-  { id: 2, name: 'user', label: 'Người dùng' },
-  { id: 3, name: 'staff', label: 'Nhân viên' }
-]
-
 const UserRoleDialog = ({ open, user, onClose, onSuccess }: UserRoleDialogProps) => {
   const dispatch = useAppDispatch()
   const { isLoading } = useAppSelector(state => state.users)
+  const { roles } = useAppSelector(state => state.roles)
 
-  const [selectedRoleId, setSelectedRoleId] = useState<number>(3)
+  const [selectedRoleId, setSelectedRoleId] = useState<number | ''>('')
 
   useEffect(() => {
-    if (user) {
-      setSelectedRoleId(user.roleId || 3)
+    dispatch(fetchRoles())
+  }, [dispatch])
+
+  useEffect(() => {
+    if (user && user.roleId) {
+      setSelectedRoleId(user.roleId)
+    } else {
+      setSelectedRoleId('')
     }
   }, [user])
 
   const handleSubmit = async () => {
-    if (!user) return
+    if (!user || !selectedRoleId) return
 
-    const result = await dispatch(changeUserRole({ userId: user.id, payload: { roleId: selectedRoleId } }))
+    const result = await dispatch(changeUserRole({ userId: user.id, payload: { roleId: Number(selectedRoleId) } }))
 
     if (changeUserRole.fulfilled.match(result)) {
       onSuccess()
@@ -56,8 +58,8 @@ const UserRoleDialog = ({ open, user, onClose, onSuccess }: UserRoleDialogProps)
     }
   }
 
-  const currentRole = ROLES.find(r => r.id === user?.roleId)
-  const newRole = ROLES.find(r => r.id === selectedRoleId)
+  const currentRole = roles.find(r => r.id === user?.roleId)
+  const newRole = roles.find(r => r.id === selectedRoleId)
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth='xs' fullWidth>
@@ -67,7 +69,7 @@ const UserRoleDialog = ({ open, user, onClose, onSuccess }: UserRoleDialogProps)
           Thay đổi vai trò của <strong>{user?.name}</strong>
         </Typography>
         <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
-          Vai trò hiện tại: <strong>{currentRole?.label || 'Chưa xác định'}</strong>
+          Vai trò hiện tại: <strong>{currentRole?.displayName || 'Chưa xác định'}</strong>
         </Typography>
         <FormControl fullWidth>
           <InputLabel>Vai trò mới</InputLabel>
@@ -76,16 +78,16 @@ const UserRoleDialog = ({ open, user, onClose, onSuccess }: UserRoleDialogProps)
             label='Vai trò mới'
             onChange={e => setSelectedRoleId(e.target.value as number)}
           >
-            {ROLES.map(role => (
+            {roles.map(role => (
               <MenuItem key={role.id} value={role.id}>
-                {role.label}
+                {role.displayName}
               </MenuItem>
             ))}
           </Select>
         </FormControl>
-        {selectedRoleId !== user?.roleId && (
+        {selectedRoleId !== user?.roleId && newRole && (
           <Typography variant='body2' color='warning.main' sx={{ mt: 2 }}>
-            {`Vai trò sẽ thay đổi từ "${currentRole?.label}" thành "${newRole?.label}"`}
+            {`Vai trò sẽ thay đổi từ "${currentRole?.displayName || '...'}" thành "${newRole.displayName}"`}
           </Typography>
         )}
       </DialogContent>
@@ -93,7 +95,11 @@ const UserRoleDialog = ({ open, user, onClose, onSuccess }: UserRoleDialogProps)
         <Button onClick={onClose} disabled={isLoading}>
           Hủy
         </Button>
-        <Button variant='contained' onClick={handleSubmit} disabled={isLoading || selectedRoleId === user?.roleId}>
+        <Button
+          variant='contained'
+          onClick={handleSubmit}
+          disabled={isLoading || selectedRoleId === user?.roleId || !selectedRoleId}
+        >
           {isLoading ? <CircularProgress size={20} /> : 'Xác nhận'}
         </Button>
       </DialogActions>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 import { useRouter } from 'next/navigation'
 
@@ -23,19 +23,14 @@ import Divider from '@mui/material/Divider'
 import Typography from '@mui/material/Typography'
 
 // Third Party Imports
-import { useForm } from 'react-hook-form'
+import { useForm, type SubmitHandler } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 
 // Redux Imports
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
 import { createUser } from '@/redux/slices/userSlice'
+import { fetchRoles } from '@/redux/slices/roleSlice'
 import { userCreateSchema, type UserCreateSchema } from '@/utils/rules'
-
-const ROLES = [
-  { value: 'admin', label: 'Quản trị viên' },
-  { value: 'staff', label: 'Nhân viên' },
-  { value: 'user', label: 'Người dùng' }
-]
 
 const GENDERS = [
   { value: 'male', label: 'Nam' },
@@ -47,6 +42,7 @@ const UserCreatePage = () => {
   const router = useRouter()
   const dispatch = useAppDispatch()
   const { isLoading } = useAppSelector(state => state.users)
+  const { roles } = useAppSelector(state => state.roles)
 
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -54,8 +50,9 @@ const UserCreatePage = () => {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors }
-  } = useForm<UserCreateSchema>({
+  } = useForm({
     resolver: zodResolver(userCreateSchema),
     defaultValues: {
       name: '',
@@ -66,14 +63,37 @@ const UserCreatePage = () => {
       address: '',
       dateOfBirth: '',
       gender: '',
-      role: 'user',
       emailVerified: false
     }
   })
 
+  useEffect(() => {
+    dispatch(fetchRoles())
+  }, [dispatch])
+
+  // Set default role once roles are loaded if needed, or let user select
+  useEffect(() => {
+    if (roles.length > 0) {
+      // Potentially set default role: e.g. 'user' or just the last one
+      const userRole = roles.find(r => r.name === 'user')
+      if (userRole) {
+        setValue('role', userRole.id)
+      } else if (roles.length > 0) {
+        setValue('role', roles[roles.length - 1].id)
+      }
+    }
+  }, [roles, setValue])
+
   const onSubmit = async (data: UserCreateSchema) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { confirmPassword, ...payload } = data
+    const { confirmPassword, role, ...rest } = data
+
+    // Map role (which is id number) to roleId payload
+    // The types/schemas have been updated so 'role' in data is the ID (number)
+    const payload = {
+      ...rest,
+      roleId: Number(role)
+    }
 
     const result = await dispatch(createUser(payload))
 
@@ -252,17 +272,21 @@ const UserCreatePage = () => {
                 select
                 fullWidth
                 label='Vai trò'
-                defaultValue='user'
+                defaultValue=''
                 inputProps={register('role')}
                 error={!!errors.role}
                 helperText={errors.role?.message || 'Chọn vai trò cho người dùng'}
                 required
               >
-                {ROLES.map(r => (
-                  <MenuItem key={r.value} value={r.value}>
-                    {r.label}
-                  </MenuItem>
-                ))}
+                {roles.length > 0 ? (
+                  roles.map(r => (
+                    <MenuItem key={r.id} value={r.id}>
+                      {r.displayName}
+                    </MenuItem>
+                  ))
+                ) : (
+                  <MenuItem disabled>Đang tải vai trò...</MenuItem>
+                )}
               </TextField>
             </Grid>
 

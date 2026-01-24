@@ -2,13 +2,14 @@
 // Authentication Types
 // =========================================
 
-// Role Type (for "user" | "admin" | "staff" values)
-export type UserRoleName = 'user' | 'admin' | 'staff'
+// Role Type (dynamic)
+export type UserRoleName = string
 
 // Role Entity (as returned from API)
 export interface Role {
   id: number
-  name: UserRoleName
+  name: string
+  displayName: string
   createdAt: string
 }
 

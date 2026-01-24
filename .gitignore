@@ -49,3 +49,5 @@ pull_request_template.md
 admin_product_api_documentation.md
 multi_image_implementation_walkthrough.md
 docs/category_api_doc.md
+docs/role_permission_api_doc.md
+docs/frontend_migration_guide.md
