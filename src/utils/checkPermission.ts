@@ -6,8 +6,9 @@ export const isAdmin = (user: User | null): boolean => {
   return user.role.name === 'admin'
 }
 
-export const hasPermission = (user: User | null, permissionName: string): boolean => {
-  return false
+export const hasPermission = (user: User | null, myPermissions: Permission[], permissionName: string): boolean => {
+  if (isAdmin(user)) return true
+  return myPermissions.some(p => p.name === permissionName)
 }
 
 export const isSuperCounter = (user: User | null): boolean => {
