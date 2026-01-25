@@ -6,20 +6,21 @@ import type {
   UpdateCategoryPayload,
   DeleteMultipleCategoriesPayload,
   CategoryListResponse,
-  CategoryDetailResponse
+  CategoryDetailResponse,
+  CategoryFilters
 } from '@/types/category.types'
+import type { ApiResponse } from '@/types/api.types'
 
 const categoryService = {
-  getAll: async (params?: { search?: string }) => {
-    const response = await axiosInstance.get<Category[]>(API_ENDPOINTS.CATEGORIES.ALL, {
+  getAll: async (params?: CategoryFilters) => {
+    const response = await axiosInstance.get<CategoryListResponse>(API_ENDPOINTS.CATEGORIES.ALL, {
       params
     })
-    // Based on API docs, it returns array directly.
     return response.data
   },
 
   getById: async (id: number | string) => {
-    const response = await axiosInstance.get<Category>(API_ENDPOINTS.CATEGORIES.DETAILS(id))
+    const response = await axiosInstance.get<ApiResponse<Category>>(API_ENDPOINTS.CATEGORIES.DETAILS(id))
     return response.data
   },
 
@@ -33,7 +34,7 @@ const categoryService = {
       formData.append('image', payload.image)
     }
 
-    const response = await axiosInstance.post<Category>(API_ENDPOINTS.CATEGORIES.CREATE, formData, {
+    const response = await axiosInstance.post<ApiResponse<Category>>(API_ENDPOINTS.CATEGORIES.CREATE, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
@@ -55,7 +56,7 @@ const categoryService = {
       formData.append('image', 'null')
     }
 
-    const response = await axiosInstance.put<Category>(API_ENDPOINTS.CATEGORIES.UPDATE(id), formData, {
+    const response = await axiosInstance.put<ApiResponse<Category>>(API_ENDPOINTS.CATEGORIES.UPDATE(id), formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
@@ -64,12 +65,12 @@ const categoryService = {
   },
 
   delete: async (id: number | string) => {
-    const response = await axiosInstance.delete<{ message: string }>(API_ENDPOINTS.CATEGORIES.DELETE(id))
+    const response = await axiosInstance.delete<ApiResponse<unknown>>(API_ENDPOINTS.CATEGORIES.DELETE(id))
     return response.data
   },
 
   deleteMultiple: async (payload: DeleteMultipleCategoriesPayload) => {
-    const response = await axiosInstance.delete<{ message: string }>(API_ENDPOINTS.CATEGORIES.DELETE_MANY, {
+    const response = await axiosInstance.delete<ApiResponse<unknown>>(API_ENDPOINTS.CATEGORIES.DELETE_MANY, {
       data: payload
     })
     return response.data
