@@ -7,9 +7,10 @@ import type {
   UpdateProductPayload,
   DeleteMultipleProductsPayload,
   ProductFilters,
-  UploadImageResponse,
-  ProductCategoryResponse
+  UploadImageResponse
 } from '@/types/product.types'
+import type { Category, CategoryListResponse } from '@/types/category.types'
+import type { ApiResponse } from '@/types/api.types'
 
 export const productService = {
   /**
@@ -27,7 +28,7 @@ export const productService = {
    * Get all product categories
    */
   getAllCategories: async () => {
-    const response = await axiosInstance.get<ProductCategoryResponse>(API_ENDPOINTS.PRODUCTS.GET_ALL_CATEGORIES)
+    const response = await axiosInstance.get<CategoryListResponse>(API_ENDPOINTS.CATEGORIES.ALL)
 
     return response.data
   },

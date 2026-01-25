@@ -106,7 +106,6 @@ const CategoryForm = () => {
       router.push('/categories')
     } catch (err: any) {
       console.error(err)
-      toast.error(typeof err === 'string' ? err : 'Có lỗi xảy ra')
     } finally {
       setIsSubmitting(false)
     }
