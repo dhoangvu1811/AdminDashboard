@@ -89,7 +89,7 @@ const UserListPage = () => {
 
   useEffect(() => {
     loadUsers()
-    dispatch(fetchRoles())
+    dispatch(fetchRoles({ limit: 100 }))
   }, [loadUsers, dispatch])
 
   // Handlers
@@ -392,7 +392,7 @@ const UserListPage = () => {
         {/* Pagination */}
         <TablePagination
           component='div'
-          count={pagination?.total || 0}
+          count={pagination?.totalItems || 0}
           page={page}
           onPageChange={handleChangePage}
           rowsPerPage={rowsPerPage}

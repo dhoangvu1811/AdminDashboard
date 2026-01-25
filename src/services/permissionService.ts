@@ -5,12 +5,15 @@ import type {
   CreatePermissionPayload,
   UpdatePermissionPayload,
   PermissionListResponse,
-  PermissionDetailResponse
+  PermissionDetailResponse,
+  PermissionFilters
 } from '@/types/role.types'
 
 const permissionService = {
-  getAll: async () => {
-    const response = await axiosInstance.get<PermissionListResponse>(API_ENDPOINTS.PERMISSIONS.ALL)
+  getAll: async (params?: PermissionFilters) => {
+    const response = await axiosInstance.get<PermissionListResponse>(API_ENDPOINTS.PERMISSIONS.ALL, {
+      params
+    })
     return response.data
   },
 

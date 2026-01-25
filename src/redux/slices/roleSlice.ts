@@ -6,25 +6,38 @@ import type {
   CreateRolePayload,
   UpdateRolePayload,
   BulkAssignPermissionsPayload,
-  Permission
+  Permission,
+  RoleFilters
 } from '@/types/role.types'
 
 const initialState: RoleState = {
   roles: [],
   selectedRole: null,
   rolePermissions: [],
+  pagination: {
+    page: 1,
+    itemsPerPage: 10,
+    totalItems: 0,
+    totalPages: 0,
+    hasNextPage: false,
+    hasPrevPage: false
+  },
+  filters: {},
   isLoading: false,
   error: null
 }
 
-export const fetchRoles = createAsyncThunk('roles/fetchAll', async (_, { rejectWithValue }) => {
-  try {
-    const response = await roleService.getAll()
-    return response
-  } catch (error: any) {
-    return rejectWithValue(error.response?.data?.message || 'Lỗi khi tải danh sách vai trò')
+export const fetchRoles = createAsyncThunk(
+  'roles/fetchAll',
+  async (params: RoleFilters | undefined, { rejectWithValue }) => {
+    try {
+      const response = await roleService.getAll(params)
+      return response.data
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Lỗi khi tải danh sách vai trò')
+    }
   }
-})
+)
 
 export const getRoleDetails = createAsyncThunk('roles/getDetails', async (id: number | string, { rejectWithValue }) => {
   try {
@@ -110,9 +123,11 @@ const roleSlice = createSlice({
       })
       .addCase(fetchRoles.fulfilled, (state, action) => {
         state.isLoading = false
-        // Handle wrapped response { data: Role[] } or direct Role[]
-        const payload = action.payload as any
-        state.roles = Array.isArray(payload) ? payload : payload.data || []
+        // Handle wrapped response { data: { roles, pagination } }
+        const payload = action.payload
+        state.roles = payload.roles
+        state.pagination = payload.pagination
+        state.filters = action.meta.arg || {}
       })
       .addCase(fetchRoles.rejected, (state, action) => {
         state.isLoading = false
@@ -146,6 +161,7 @@ const roleSlice = createSlice({
         const payload = action.payload as any
         const newRole = payload.data || payload
         state.roles.push(newRole)
+        state.pagination.totalItems += 1
       })
       .addCase(createRole.rejected, (state, action) => {
         state.isLoading = false
@@ -185,6 +201,7 @@ const roleSlice = createSlice({
       .addCase(deleteRole.fulfilled, (state, action) => {
         state.isLoading = false
         state.roles = state.roles.filter(r => r.id !== Number(action.payload))
+        state.pagination.totalItems -= 1
       })
       .addCase(deleteRole.rejected, (state, action) => {
         state.isLoading = false

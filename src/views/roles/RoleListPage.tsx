@@ -21,6 +21,8 @@ import TableRow from '@mui/material/TableRow'
 import CircularProgress from '@mui/material/CircularProgress'
 import Tooltip from '@mui/material/Tooltip'
 import Chip from '@mui/material/Chip'
+import TablePagination from '@mui/material/TablePagination'
+import { useDebounce } from '@/hooks/useDebounce'
 
 // Redux
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
@@ -33,17 +35,34 @@ const RoleListPage = () => {
   const router = useRouter()
   const dispatch = useAppDispatch()
 
-  const { roles, isLoading, error } = useAppSelector(state => state.roles)
+  const { roles, pagination, isLoading } = useAppSelector(state => state.roles)
 
   const [search, setSearch] = useState('')
+  const [page, setPage] = useState(0)
+  const [rowsPerPage, setRowsPerPage] = useState(10)
   const [roleToDelete, setRoleToDelete] = useState<Role | null>(null)
 
+  // Debounce search optional, but for now strict effect
   useEffect(() => {
-    dispatch(fetchRoles())
-  }, [dispatch])
+    const timer = setTimeout(() => {
+      dispatch(fetchRoles({ page: page + 1, limit: rowsPerPage, search }))
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [dispatch, page, rowsPerPage, search])
 
-  // Client-side filtering
-  const filteredRoles = roles.filter(role => role.name.toLowerCase().includes(search.toLowerCase()))
+  const handlePageChange = (event: unknown, newPage: number) => {
+    setPage(newPage)
+  }
+
+  const handleRowsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10))
+    setPage(0)
+  }
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value)
+    setPage(0)
+  }
 
   const handleEdit = (id: number) => {
     router.push(`/roles/update/${id}`)
@@ -70,7 +89,7 @@ const RoleListPage = () => {
               <Button
                 variant='outlined'
                 startIcon={<i className='ri-refresh-line' />}
-                onClick={() => dispatch(fetchRoles())}
+                onClick={() => dispatch(fetchRoles({ page: page + 1, limit: rowsPerPage, search }))}
               >
                 Làm mới
               </Button>
@@ -90,7 +109,7 @@ const RoleListPage = () => {
             size='small'
             placeholder='Tìm kiếm vai trò...'
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={handleSearchChange}
             sx={{ maxWidth: 400 }}
             InputProps={{
               startAdornment: (
@@ -119,14 +138,14 @@ const RoleListPage = () => {
                     <CircularProgress />
                   </TableCell>
                 </TableRow>
-              ) : filteredRoles.length === 0 ? (
+              ) : roles.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4} align='center' sx={{ py: 10 }}>
                     <Typography color='text.secondary'>Không tìm thấy dữ liệu</Typography>
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredRoles.map(role => (
+                roles.map(role => (
                   <TableRow key={role.id} hover>
                     <TableCell>#{role.id}</TableCell>
                     <TableCell>
@@ -168,6 +187,17 @@ const RoleListPage = () => {
             </TableBody>
           </Table>
         </TableContainer>
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 25]}
+          component='div'
+          count={pagination?.totalItems || 0}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handlePageChange}
+          onRowsPerPageChange={handleRowsPerPageChange}
+          labelRowsPerPage='Số dòng:'
+          labelDisplayedRows={({ from, to, count }) => `${from}-${to} / ${count}`}
+        />
       </Card>
 
       <RoleDeleteDialog

@@ -36,7 +36,7 @@ const UserRoleDialog = ({ open, user, onClose, onSuccess }: UserRoleDialogProps)
   const [selectedRoleId, setSelectedRoleId] = useState<number | ''>('')
 
   useEffect(() => {
-    dispatch(fetchRoles())
+    dispatch(fetchRoles({ limit: 100 }))
   }, [dispatch])
 
   useEffect(() => {
