@@ -40,7 +40,8 @@ next-env.d.ts
 src/assets/iconify-icons/generated-icons.js
 src/assets/iconify-icons/generated-icons.css
 
-.agent
+.agents
+.vscode/mcp.json
 admin_api_documentation.md
 client_api_documentation.md
 commit-message-instruction.md

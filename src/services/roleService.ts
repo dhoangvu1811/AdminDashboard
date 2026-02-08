@@ -5,13 +5,17 @@ import type {
   Permission,
   CreateRolePayload,
   UpdateRolePayload,
-  BulkAssignPermissionsPayload
+  BulkAssignPermissionsPayload,
+  RoleListResponse,
+  RoleFilters
 } from '@/types/role.types'
 
 const roleService = {
   // Roles
-  getAll: async () => {
-    const response = await axiosInstance.get<Role[]>(API_ENDPOINTS.ROLES.ALL)
+  getAll: async (params?: RoleFilters) => {
+    const response = await axiosInstance.get<RoleListResponse>(API_ENDPOINTS.ROLES.ALL, {
+      params
+    })
     return response.data
   },
 

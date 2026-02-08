@@ -1,6 +1,6 @@
 // API Response Types
 export interface ApiResponse<T = unknown> {
-  success: boolean
+  code: number
   message: string
   data: T
 }
@@ -14,9 +14,11 @@ export interface PaginatedResponse<T> {
 
 export interface PaginationInfo {
   page: number
-  limit: number
-  total: number
+  itemsPerPage: number
+  totalItems: number
   totalPages: number
+  hasNextPage: boolean
+  hasPrevPage: boolean
 }
 
 export interface ApiError {

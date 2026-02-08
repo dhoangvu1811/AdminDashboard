@@ -4,17 +4,13 @@ import type { PaginationInfo, SearchParams } from './api.types'
 // Product Entity Types
 // =========================================
 
+import type { Category } from './category.types'
+
 export interface ProductImage {
   id: number
   productId: number
   image: string
   createdAt: string
-}
-
-export interface Category {
-  id: number
-  name: string
-  slug?: string
 }
 
 export type ProductStatus = 'active' | 'inactive'

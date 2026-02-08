@@ -20,9 +20,11 @@ const initialState: ProductState = {
   selectedProduct: null,
   pagination: {
     page: 1,
-    limit: 10,
-    total: 0,
-    totalPages: 0
+    itemsPerPage: 10,
+    totalItems: 0,
+    totalPages: 0,
+    hasNextPage: false,
+    hasPrevPage: false
   },
   filters: {},
   isLoading: false,
@@ -44,12 +46,15 @@ export const fetchProducts = createAsyncThunk(
       const response = await productService.getAll(filters)
 
       // Map API pagination to internal PaginationInfo
+      // As agreed with BE, pagination structure is standardized
       const apiPagination = response.data.pagination as any
       const pagination = {
         page: apiPagination.page,
-        limit: apiPagination.itemsPerPage || apiPagination.limit,
-        total: apiPagination.totalProducts || apiPagination.total,
-        totalPages: apiPagination.totalPages
+        itemsPerPage: apiPagination.itemsPerPage,
+        totalItems: apiPagination.totalItems,
+        totalPages: apiPagination.totalPages,
+        hasNextPage: apiPagination.hasNextPage,
+        hasPrevPage: apiPagination.hasPrevPage
       }
 
       return { products: response.data.products, pagination, filters }
@@ -66,7 +71,7 @@ export const fetchProducts = createAsyncThunk(
 export const fetchProductCategories = createAsyncThunk('products/fetchCategories', async (_, { rejectWithValue }) => {
   try {
     const response = await productService.getAllCategories()
-    return response.data
+    return response.data.categories
   } catch (error: unknown) {
     const err = error as { response?: { data?: { message?: string } } }
     return rejectWithValue(err.response?.data?.message || 'Không thể tải danh sách danh mục')
@@ -216,7 +221,7 @@ const productSlice = createSlice({
       .addCase(createProduct.fulfilled, (state, action) => {
         state.isLoading = false
         state.products.unshift(action.payload)
-        state.pagination.total += 1
+        state.pagination.totalItems += 1
         toast.success('Tạo sản phẩm thành công!')
       })
       .addCase(createProduct.rejected, (state, action) => {
@@ -255,7 +260,7 @@ const productSlice = createSlice({
       .addCase(deleteProduct.fulfilled, (state, action) => {
         state.isLoading = false
         state.products = state.products.filter(p => p.id !== Number(action.payload))
-        state.pagination.total -= 1
+        state.pagination.totalItems -= 1
         toast.success('Xóa sản phẩm thành công!')
       })
       .addCase(deleteProduct.rejected, (state, action) => {
@@ -273,7 +278,7 @@ const productSlice = createSlice({
         state.isLoading = false
         const deletedIds = action.payload.map(id => String(id))
         state.products = state.products.filter(p => !deletedIds.includes(String(p.id)))
-        state.pagination.total -= action.payload.length
+        state.pagination.totalItems -= action.payload.length
         toast.success(`Đã xóa ${action.payload.length} sản phẩm!`)
       })
       .addCase(deleteMultipleProducts.rejected, (state, action) => {

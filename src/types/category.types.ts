@@ -42,10 +42,14 @@ export interface CategoryFilters extends SearchParams {
 // API Response Types
 // =========================================
 
+// API Response Types
 export interface CategoryListResponse {
-  code?: number
-  message?: string
-  data?: Category[]
+  code: number
+  message: string
+  data: {
+    categories: Category[]
+    pagination: PaginationInfo
+  }
 }
 
 export interface CategoryDetailResponse {
@@ -61,6 +65,7 @@ export interface CategoryDetailResponse {
 export interface CategoryState {
   categories: Category[]
   selectedCategory: Category | null
+  pagination: PaginationInfo
   filters: CategoryFilters
   isLoading: boolean
   error: string | null

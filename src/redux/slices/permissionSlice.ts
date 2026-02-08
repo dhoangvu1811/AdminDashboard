@@ -1,23 +1,41 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
 import permissionService from '@/services/permissionService'
-import type { Permission, PermissionState, CreatePermissionPayload, UpdatePermissionPayload } from '@/types/role.types'
+import type {
+  Permission,
+  PermissionState,
+  CreatePermissionPayload,
+  UpdatePermissionPayload,
+  PermissionFilters
+} from '@/types/role.types'
 
 const initialState: PermissionState = {
   permissions: [],
   selectedPermission: null,
   myPermissions: [],
+  pagination: {
+    page: 1,
+    itemsPerPage: 10,
+    totalItems: 0,
+    totalPages: 0,
+    hasNextPage: false,
+    hasPrevPage: false
+  },
+  filters: {},
   isLoading: false,
   error: null
 }
 
-export const fetchPermissions = createAsyncThunk('permissions/fetchAll', async (_, { rejectWithValue }) => {
-  try {
-    const response = await permissionService.getAll()
-    return response
-  } catch (error: any) {
-    return rejectWithValue(error.response?.data?.message || 'Lỗi khi tải danh sách quyền hạn')
+export const fetchPermissions = createAsyncThunk(
+  'permissions/fetchAll',
+  async (params: PermissionFilters | undefined, { rejectWithValue }) => {
+    try {
+      const response = await permissionService.getAll(params)
+      return response.data
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Lỗi khi tải danh sách quyền hạn')
+    }
   }
-})
+)
 
 export const fetchMyPermissions = createAsyncThunk('permissions/fetchMe', async (_, { rejectWithValue }) => {
   try {
@@ -80,8 +98,10 @@ const permissionSlice = createSlice({
       })
       .addCase(fetchPermissions.fulfilled, (state, action) => {
         state.isLoading = false
-        const payload = action.payload as any
-        state.permissions = Array.isArray(payload) ? payload : payload.data || []
+        const payload = action.payload
+        state.permissions = payload.permissions
+        state.pagination = payload.pagination
+        state.filters = action.meta.arg || {}
       })
       .addCase(fetchPermissions.rejected, (state, action) => {
         state.isLoading = false
@@ -92,6 +112,7 @@ const permissionSlice = createSlice({
       const payload = action.payload as any
       const newPermission = payload.data || payload
       state.permissions.push(newPermission)
+      state.pagination.totalItems += 1
     })
 
     builder.addCase(updatePermission.fulfilled, (state, action) => {
@@ -105,6 +126,7 @@ const permissionSlice = createSlice({
 
     builder.addCase(deletePermission.fulfilled, (state, action) => {
       state.permissions = state.permissions.filter(p => p.id !== Number(action.payload))
+      state.pagination.totalItems -= 1
     })
 
     builder.addCase(fetchMyPermissions.fulfilled, (state, action) => {

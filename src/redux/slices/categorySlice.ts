@@ -12,6 +12,14 @@ import type {
 const initialState: CategoryState = {
   categories: [],
   selectedCategory: null,
+  pagination: {
+    page: 1,
+    itemsPerPage: 10,
+    totalItems: 0,
+    totalPages: 0,
+    hasNextPage: false,
+    hasPrevPage: false
+  },
   filters: {},
   isLoading: false,
   error: null
@@ -21,8 +29,19 @@ export const fetchCategories = createAsyncThunk(
   'categories/fetchAll',
   async (filters: CategoryFilters = {}, { rejectWithValue }) => {
     try {
-      const response = await categoryService.getAll({ search: filters.search })
-      return response
+      const response = await categoryService.getAll(filters)
+
+      const apiPagination = response.data.pagination as any
+      const pagination = {
+        page: apiPagination.page,
+        itemsPerPage: apiPagination.itemsPerPage,
+        totalItems: apiPagination.totalItems,
+        totalPages: apiPagination.totalPages,
+        hasNextPage: apiPagination.hasNextPage,
+        hasPrevPage: apiPagination.hasPrevPage
+      }
+
+      return { categories: response.data.categories, pagination, filters }
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Lỗi khi tải danh sách danh mục')
     }
@@ -34,7 +53,7 @@ export const getCategoryDetails = createAsyncThunk(
   async (id: number | string, { rejectWithValue }) => {
     try {
       const response = await categoryService.getById(id)
-      return response
+      return response.data
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Lỗi khi tải chi tiết danh mục')
     }
@@ -46,7 +65,7 @@ export const createCategory = createAsyncThunk(
   async (payload: CreateCategoryPayload, { rejectWithValue }) => {
     try {
       const response = await categoryService.create(payload)
-      return response
+      return response.data
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Lỗi khi tạo danh mục')
     }
@@ -58,7 +77,7 @@ export const updateCategory = createAsyncThunk(
   async ({ id, payload }: { id: number | string; payload: UpdateCategoryPayload }, { rejectWithValue }) => {
     try {
       const response = await categoryService.update(id, payload)
-      return response
+      return response.data
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Lỗi khi cập nhật danh mục')
     }
@@ -112,7 +131,9 @@ const categorySlice = createSlice({
       })
       .addCase(fetchCategories.fulfilled, (state, action) => {
         state.isLoading = false
-        state.categories = action.payload
+        state.categories = action.payload.categories
+        state.pagination = action.payload.pagination
+        state.filters = action.payload.filters
       })
       .addCase(fetchCategories.rejected, (state, action) => {
         state.isLoading = false
@@ -143,6 +164,7 @@ const categorySlice = createSlice({
       .addCase(createCategory.fulfilled, (state, action) => {
         state.isLoading = false
         state.categories.unshift(action.payload)
+        state.pagination.totalItems += 1
       })
       .addCase(createCategory.rejected, (state, action) => {
         state.isLoading = false
@@ -179,6 +201,7 @@ const categorySlice = createSlice({
       .addCase(deleteCategory.fulfilled, (state, action) => {
         state.isLoading = false
         state.categories = state.categories.filter(c => c.id !== Number(action.payload))
+        state.pagination.totalItems -= 1
       })
       .addCase(deleteCategory.rejected, (state, action) => {
         state.isLoading = false
@@ -195,6 +218,7 @@ const categorySlice = createSlice({
         state.isLoading = false
         const ids = action.payload
         state.categories = state.categories.filter(c => !ids.includes(c.id))
+        state.pagination.totalItems -= ids.length
       })
       .addCase(deleteMultipleCategories.rejected, (state, action) => {
         state.isLoading = false

@@ -25,6 +25,7 @@ import TableHead from '@mui/material/TableHead'
 import TableRow from '@mui/material/TableRow'
 import CircularProgress from '@mui/material/CircularProgress'
 import Tooltip from '@mui/material/Tooltip'
+import TablePagination from '@mui/material/TablePagination'
 
 // Redux Imports
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
@@ -40,11 +41,15 @@ const CategoryListPage = () => {
   const dispatch = useAppDispatch()
 
   // Redux state
-  const { categories, isLoading, error } = useAppSelector(state => state.categories)
+  const { categories, pagination, isLoading, error } = useAppSelector(state => {
+    return state.categories
+  })
 
   // Filter states
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search, 500)
+  const [page, setPage] = useState(0)
+  const [rowsPerPage, setRowsPerPage] = useState(10)
 
   // Selection states
   const [selectedCategories, setSelectedCategories] = useState<number[]>([])
@@ -59,8 +64,14 @@ const CategoryListPage = () => {
 
   // Fetch Categories Handler
   const loadCategories = useCallback(() => {
-    dispatch(fetchCategories({ search: debouncedSearch || undefined }))
-  }, [dispatch, debouncedSearch])
+    dispatch(
+      fetchCategories({
+        page: page + 1,
+        itemsPerPage: rowsPerPage,
+        search: debouncedSearch || undefined
+      })
+    )
+  }, [dispatch, page, rowsPerPage, debouncedSearch])
 
   useEffect(() => {
     loadCategories()
@@ -69,6 +80,16 @@ const CategoryListPage = () => {
   // Handlers
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(event.target.value)
+    setPage(0)
+  }
+
+  const handleChangePage = (_: unknown, newPage: number) => {
+    setPage(newPage)
+  }
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10))
+    setPage(0)
   }
 
   // Selection Handlers
@@ -265,6 +286,21 @@ const CategoryListPage = () => {
             </TableBody>
           </Table>
         </TableContainer>
+
+        {/* Pagination */}
+        <TablePagination
+          component='div'
+          count={pagination?.totalItems || 0}
+          page={page}
+          onPageChange={handleChangePage}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          rowsPerPageOptions={[5, 10, 25, 50]}
+          labelRowsPerPage='Số dòng:'
+          labelDisplayedRows={({ from, to, count }: { from: number; to: number; count: number }) =>
+            `${from}-${to} / ${count}`
+          }
+        />
       </Card>
 
       {/* Action Menu */}

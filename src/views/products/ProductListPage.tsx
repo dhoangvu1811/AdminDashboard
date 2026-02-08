@@ -377,7 +377,7 @@ const ProductListPage = () => {
         {/* Pagination */}
         <TablePagination
           component='div'
-          count={pagination.total}
+          count={pagination.totalItems}
           page={page}
           onPageChange={handleChangePage}
           rowsPerPage={rowsPerPage}

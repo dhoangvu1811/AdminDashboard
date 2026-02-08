@@ -68,7 +68,7 @@ const UserCreatePage = () => {
   })
 
   useEffect(() => {
-    dispatch(fetchRoles())
+    dispatch(fetchRoles({ limit: 100 }))
   }, [dispatch])
 
   // Set default role once roles are loaded if needed, or let user select

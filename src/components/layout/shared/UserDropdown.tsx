@@ -87,7 +87,7 @@ const UserDropdown = () => {
       await Promise.all([refreshUser(), dispatch(fetchMyPermissions()).unwrap()])
       toast.success('Đã cập nhật dữ liệu')
     } catch (error) {
-      toast.error('Lỗi cập nhật dữ liệu')
+      console.error(error)
     }
   }
 

@@ -22,9 +22,11 @@ const initialState: UserState = {
   sessions: [],
   pagination: {
     page: 1,
-    limit: 10,
-    total: 0,
-    totalPages: 0
+    itemsPerPage: 10,
+    totalItems: 0,
+    totalPages: 0,
+    hasNextPage: false,
+    hasPrevPage: false
   },
   filters: {},
   isLoading: false,
@@ -47,9 +49,11 @@ export const fetchUsers = createAsyncThunk('users/fetchAll', async (filters: Use
 
     const paginationData = {
       page: response.data.pagination.page,
-      limit: (response.data.pagination as any).itemsPerPage || response.data.pagination.limit,
-      total: (response.data.pagination as any).totalUsers || response.data.pagination.total,
-      totalPages: response.data.pagination.totalPages
+      itemsPerPage: (response.data.pagination as any).itemsPerPage || response.data.pagination.itemsPerPage,
+      totalItems: (response.data.pagination as any).totalItems || (response.data.pagination as any).totalUsers,
+      totalPages: response.data.pagination.totalPages,
+      hasNextPage: (response.data.pagination as any).hasNextPage,
+      hasPrevPage: (response.data.pagination as any).hasPrevPage
     }
 
     return { users: response.data.users, pagination: paginationData, filters }
@@ -347,7 +351,7 @@ const userSlice = createSlice({
       .addCase(createUser.fulfilled, (state, action) => {
         state.isLoading = false
         state.users.unshift(action.payload)
-        state.pagination.total += 1
+        state.pagination.totalItems += 1
         toast.success('Tạo người dùng thành công!')
       })
       .addCase(createUser.rejected, (state, action) => {
@@ -390,7 +394,7 @@ const userSlice = createSlice({
       .addCase(deleteUser.fulfilled, (state, action) => {
         state.isLoading = false
         state.users = state.users.filter(u => u.id !== Number(action.payload))
-        state.pagination.total -= 1
+        state.pagination.totalItems -= 1
         toast.success('Xóa người dùng thành công!')
       })
       .addCase(deleteUser.rejected, (state, action) => {
@@ -407,7 +411,7 @@ const userSlice = createSlice({
       .addCase(deleteMultipleUsers.fulfilled, (state, action) => {
         state.isLoading = false
         state.users = state.users.filter(u => !action.payload.includes(String(u.id)))
-        state.pagination.total -= action.payload.length
+        state.pagination.totalItems -= action.payload.length
         toast.success(`Đã xóa ${action.payload.length} người dùng!`)
       })
       .addCase(deleteMultipleUsers.rejected, (state, action) => {

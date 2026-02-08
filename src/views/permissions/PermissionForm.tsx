@@ -51,7 +51,7 @@ const PermissionForm = () => {
         .then(res => {
           reset({ name: res.data.name, displayName: res.data.displayName })
         })
-        .catch(err => toast.error('Lỗi tải quyền hạn'))
+        .catch(err => console.error(err))
         .finally(() => setLoading(false))
     }
   }, [isEditMode, id, reset])
@@ -70,7 +70,7 @@ const PermissionForm = () => {
       }
       router.push('/permissions')
     } catch (err: any) {
-      toast.error(typeof err === 'string' ? err : 'Có lỗi xảy ra')
+      console.error(err)
     } finally {
       setLoading(false)
     }

@@ -123,7 +123,6 @@ const AccountDetails = () => {
       toast.success('Cập nhật hồ sơ thành công!')
     } catch (error: any) {
       console.error(error)
-      toast.error(error.message || 'Có lỗi xảy ra khi cập nhật hồ sơ')
     } finally {
       setIsLoading(false)
     }
