@@ -1,13 +1,13 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
 import IconButton from '@mui/material/IconButton'
-import CircularProgress from '@mui/material/CircularProgress'
 import Avatar from '@mui/material/Avatar'
-import Card from '@mui/material/Card'
+import toast from 'react-hot-toast'
 
 interface ImageUploaderProps {
   initialImages?: string[]
@@ -43,19 +43,23 @@ const ImageUploader = ({ initialImages = [], onChange, maxImages = 5 }: ImageUpl
 
       // Limit check
       const totalImages = existingImages.length + newFiles.length + validFiles.length
+
       if (totalImages > maxImages) {
-        alert(`Bạn chỉ được tải lên tối đa ${maxImages} ảnh.`)
+        toast.error(`Bạn chỉ được tải lên tối đa ${maxImages} ảnh.`)
+
         return
       }
 
       const newPreviews = validFiles.map(file => URL.createObjectURL(file))
 
       const updatedFiles = [...newFiles, ...validFiles]
+
       setNewFiles(updatedFiles)
       setNewPreviews(prev => [...prev, ...newPreviews])
 
       onChange(updatedFiles, existingImages)
     }
+
     // Reset input
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
@@ -64,6 +68,7 @@ const ImageUploader = ({ initialImages = [], onChange, maxImages = 5 }: ImageUpl
 
   const removeExistingImage = (index: number) => {
     const updatedImages = existingImages.filter((_, i) => i !== index)
+
     setExistingImages(updatedImages)
     onChange(newFiles, updatedImages)
   }
