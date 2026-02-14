@@ -3,10 +3,12 @@
 // React Imports
 import { useRef, useState } from 'react'
 import type { MouseEvent } from 'react'
+
+import { useRouter } from 'next/navigation'
+
 import { toast } from 'react-hot-toast'
 
 // Next Imports
-import { useRouter } from 'next/navigation'
 
 // MUI Imports
 import { styled } from '@mui/material/styles'
@@ -88,6 +90,7 @@ const UserDropdown = () => {
       toast.success('Đã cập nhật dữ liệu')
     } catch (error) {
       console.error(error)
+      toast.error('Không thể cập nhật dữ liệu. Vui lòng thử lại.')
     }
   }
 
