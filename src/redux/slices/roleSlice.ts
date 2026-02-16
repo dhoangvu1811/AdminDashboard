@@ -1,4 +1,4 @@
-import type { PayloadAction } from '@reduxjs/toolkit';
+import type { PayloadAction } from '@reduxjs/toolkit'
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 
 import roleService from '@/services/roleService'
@@ -34,8 +34,7 @@ export const fetchRoles = createAsyncThunk(
     try {
       const response = await roleService.getAll(params)
 
-      
-return response.data
+      return response.data
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Lỗi khi tải danh sách vai trò')
     }
@@ -46,8 +45,7 @@ export const getRoleDetails = createAsyncThunk('roles/getDetails', async (id: nu
   try {
     const response = await roleService.getById(id)
 
-    
-return response
+    return response
   } catch (error: any) {
     return rejectWithValue(error.response?.data?.message || 'Lỗi khi tải chi tiết vai trò')
   }
@@ -57,8 +55,7 @@ export const createRole = createAsyncThunk('roles/create', async (payload: Creat
   try {
     const response = await roleService.create(payload)
 
-    
-return response
+    return response
   } catch (error: any) {
     return rejectWithValue(error.response?.data?.message || 'Lỗi khi tạo vai trò')
   }
@@ -70,8 +67,7 @@ export const updateRole = createAsyncThunk(
     try {
       const response = await roleService.update(id, payload)
 
-      
-return response
+      return response
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Lỗi khi cập nhật vai trò')
     }
@@ -81,8 +77,8 @@ return response
 export const deleteRole = createAsyncThunk('roles/delete', async (id: number | string, { rejectWithValue }) => {
   try {
     await roleService.delete(id)
-    
-return id
+
+    return id
   } catch (error: any) {
     return rejectWithValue(error.response?.data?.message || 'Lỗi khi xóa vai trò')
   }
@@ -95,8 +91,7 @@ export const fetchRolePermissions = createAsyncThunk(
     try {
       const response = await roleService.getPermissions(id)
 
-      
-return response
+      return response
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Lỗi khi tải quyền hạn của vai trò')
     }
@@ -108,8 +103,8 @@ export const bulkAssignPermissions = createAsyncThunk(
   async ({ id, payload }: { id: number | string; payload: BulkAssignPermissionsPayload }, { rejectWithValue }) => {
     try {
       await roleService.bulkAssignPermissions(id, payload)
-      
-return payload.permissionIds
+
+      return payload.permissionIds
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Lỗi khi gán quyền hạn')
     }

@@ -30,7 +30,7 @@ import Tooltip from '@mui/material/Tooltip'
 
 // Redux Imports
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
-import { fetchOrders, setFilters } from '@/redux/slices/orderSlice'
+import { fetchOrders } from '@/redux/slices/orderSlice'
 import type { OrderFilters, OrderStatus, PaymentStatus } from '@/types/order.types'
 import { useDebounce } from '@/hooks'
 

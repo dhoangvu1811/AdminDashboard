@@ -16,15 +16,13 @@ const categoryService = {
       params
     })
 
-    
-return response.data
+    return response.data
   },
 
   getById: async (id: number | string) => {
     const response = await axiosInstance.get<ApiResponse<Category>>(API_ENDPOINTS.CATEGORIES.DETAILS(id))
 
-    
-return response.data
+    return response.data
   },
 
   create: async (payload: CreateCategoryPayload) => {
@@ -46,8 +44,7 @@ return response.data
       }
     })
 
-    
-return response.data
+    return response.data
   },
 
   update: async (id: number | string, payload: UpdateCategoryPayload) => {
@@ -73,15 +70,13 @@ return response.data
       }
     })
 
-    
-return response.data
+    return response.data
   },
 
   delete: async (id: number | string) => {
     const response = await axiosInstance.delete<ApiResponse<unknown>>(API_ENDPOINTS.CATEGORIES.DELETE(id))
 
-    
-return response.data
+    return response.data
   },
 
   deleteMultiple: async (payload: DeleteMultipleCategoriesPayload) => {
@@ -89,8 +84,7 @@ return response.data
       data: payload
     })
 
-    
-return response.data
+    return response.data
   }
 }
 
