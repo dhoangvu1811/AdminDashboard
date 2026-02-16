@@ -97,16 +97,19 @@ export const fetchOrderById = createAsyncThunk('orders/fetchById', async (id: nu
 /**
  * Fetch order logs
  */
-export const fetchOrderLogs = createAsyncThunk('orders/fetchLogs', async (id: number | string, { rejectWithValue: _rejectWithValue }) => {
-  try {
-    const response = await orderService.getLogs(id)
+export const fetchOrderLogs = createAsyncThunk(
+  'orders/fetchLogs',
+  async (id: number | string, { rejectWithValue: _rejectWithValue }) => {
+    try {
+      const response = await orderService.getLogs(id)
 
-    return response.logs
-  } catch (error: unknown) {
-    // Silent fail or just empty logs
-    return []
+      return response.logs
+    } catch (error: unknown) {
+      // Silent fail or just empty logs
+      return []
+    }
   }
-})
+)
 
 /**
  * Update order status

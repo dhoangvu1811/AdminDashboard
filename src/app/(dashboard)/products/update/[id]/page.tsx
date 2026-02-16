@@ -14,7 +14,6 @@ import { useAppDispatch, useAppSelector } from '@/redux/hooks'
 import { fetchProductById, clearSelectedProduct } from '@/redux/slices/productSlice'
 import ProductForm from '@/views/products/ProductForm'
 
-
 const ProductUpdatePage = () => {
   const { id } = useParams()
   const dispatch = useAppDispatch()

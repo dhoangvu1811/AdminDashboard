@@ -8,7 +8,6 @@ import type {
   CreateRolePayload,
   UpdateRolePayload,
   BulkAssignPermissionsPayload,
-  Permission,
   RoleFilters
 } from '@/types/role.types'
 

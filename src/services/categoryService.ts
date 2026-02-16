@@ -6,7 +6,6 @@ import type {
   UpdateCategoryPayload,
   DeleteMultipleCategoriesPayload,
   CategoryListResponse,
-  CategoryDetailResponse,
   CategoryFilters
 } from '@/types/category.types'
 import type { ApiResponse } from '@/types/api.types'

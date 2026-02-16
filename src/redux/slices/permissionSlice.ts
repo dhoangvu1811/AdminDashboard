@@ -31,8 +31,7 @@ export const fetchPermissions = createAsyncThunk(
     try {
       const response = await permissionService.getAll(params)
 
-      
-return response.data
+      return response.data
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Lỗi khi tải danh sách quyền hạn')
     }
@@ -43,8 +42,7 @@ export const fetchMyPermissions = createAsyncThunk('permissions/fetchMe', async 
   try {
     const response = await permissionService.getMyPermissions()
 
-    
-return response
+    return response
   } catch (error: any) {
     return rejectWithValue(error.response?.data?.message || 'Lỗi khi tải quyền hạn của bạn')
   }
@@ -56,8 +54,7 @@ export const createPermission = createAsyncThunk(
     try {
       const response = await permissionService.create(payload)
 
-      
-return response
+      return response
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Lỗi khi tạo quyền hạn')
     }
@@ -70,8 +67,7 @@ export const updatePermission = createAsyncThunk(
     try {
       const response = await permissionService.update(id, payload)
 
-      
-return response
+      return response
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Lỗi khi cập nhật quyền hạn')
     }
@@ -83,8 +79,8 @@ export const deletePermission = createAsyncThunk(
   async (id: number | string, { rejectWithValue }) => {
     try {
       await permissionService.delete(id)
-      
-return id
+
+      return id
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Lỗi khi xóa quyền hạn')
     }

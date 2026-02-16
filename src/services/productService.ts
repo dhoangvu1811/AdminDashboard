@@ -9,8 +9,7 @@ import type {
   ProductFilters,
   UploadImageResponse
 } from '@/types/product.types'
-import type { Category, CategoryListResponse } from '@/types/category.types'
-import type { ApiResponse } from '@/types/api.types'
+import type { CategoryListResponse } from '@/types/category.types'
 
 export const productService = {
   /**

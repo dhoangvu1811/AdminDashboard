@@ -1,7 +1,6 @@
 import axiosInstance from '@/libs/api/axiosInstance'
 import { API_ENDPOINTS } from '@/libs/api/endpoints'
 import type {
-  Permission,
   CreatePermissionPayload,
   UpdatePermissionPayload,
   PermissionListResponse,
