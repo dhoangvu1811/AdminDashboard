@@ -1,8 +1,7 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 
 import permissionService from '@/services/permissionService'
 import type {
-  Permission,
   PermissionState,
   CreatePermissionPayload,
   UpdatePermissionPayload,

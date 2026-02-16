@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 
 import CircularProgress from '@mui/material/CircularProgress'
 
@@ -17,7 +17,6 @@ import ProductForm from '@/views/products/ProductForm'
 
 const ProductUpdatePage = () => {
   const { id } = useParams()
-  const router = useRouter()
   const dispatch = useAppDispatch()
 
   const { selectedProduct, isLoadingDetail, error } = useAppSelector(state => state.products)

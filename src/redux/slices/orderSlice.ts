@@ -97,7 +97,7 @@ export const fetchOrderById = createAsyncThunk('orders/fetchById', async (id: nu
 /**
  * Fetch order logs
  */
-export const fetchOrderLogs = createAsyncThunk('orders/fetchLogs', async (id: number | string, { rejectWithValue }) => {
+export const fetchOrderLogs = createAsyncThunk('orders/fetchLogs', async (id: number | string, { rejectWithValue: _rejectWithValue }) => {
   try {
     const response = await orderService.getLogs(id)
 
