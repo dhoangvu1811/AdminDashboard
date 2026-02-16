@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+
 import { useRouter } from 'next/navigation'
 
 // MUI Imports
@@ -81,6 +82,7 @@ const ProductForm = ({ initialData, isEdit = false }: ProductFormProps) => {
 
       const galleryImages = initialData.images?.map(img => img.image) || []
       const combinedImages = initialData.image ? [initialData.image, ...galleryImages] : galleryImages
+
       // Remove duplicates
       const uniqueImages = Array.from(new Set(combinedImages))
 
@@ -96,7 +98,8 @@ const ProductForm = ({ initialData, isEdit = false }: ProductFormProps) => {
   const onSubmit = async (data: ProductSchema) => {
     if (imagesToUpload.length === 0 && existingImages.length === 0) {
       toast.error('Vui lòng tải lên ít nhất 1 ảnh')
-      return
+      
+return
     }
 
     try {
@@ -119,6 +122,7 @@ const ProductForm = ({ initialData, isEdit = false }: ProductFormProps) => {
       const payload = {
         ...data,
         image: primaryImage,
+
         // Send all images to the 'images' field for the gallery
         images: allImages
       }
@@ -132,6 +136,7 @@ const ProductForm = ({ initialData, isEdit = false }: ProductFormProps) => {
       }
     } catch (error) {
       console.error(error)
+
       // Toast handled in slice
     } finally {
       setIsSubmitting(false)

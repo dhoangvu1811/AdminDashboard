@@ -8,7 +8,8 @@ import categoryReducer from './slices/categorySlice'
 import roleReducer from './slices/roleSlice'
 import permissionReducer from './slices/permissionSlice'
 
-// import orderReducer from './slices/orderSlice'
+import orderReducer from './slices/orderSlice'
+
 // import voucherReducer from './slices/voucherSlice'
 // import contactReducer from './slices/contactSlice'
 
@@ -19,9 +20,9 @@ export const store = configureStore({
     products: productReducer,
     categories: categoryReducer,
     roles: roleReducer,
-    permissions: permissionReducer
+    permissions: permissionReducer,
+    orders: orderReducer
 
-    // orders: orderReducer,
     // vouchers: voucherReducer,
     // contacts: contactReducer,
   },

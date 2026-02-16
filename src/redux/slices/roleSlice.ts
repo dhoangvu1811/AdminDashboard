@@ -1,4 +1,6 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
+import type { PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+
 import roleService from '@/services/roleService'
 import type {
   Role,
@@ -6,7 +8,6 @@ import type {
   CreateRolePayload,
   UpdateRolePayload,
   BulkAssignPermissionsPayload,
-  Permission,
   RoleFilters
 } from '@/types/role.types'
 
@@ -32,6 +33,7 @@ export const fetchRoles = createAsyncThunk(
   async (params: RoleFilters | undefined, { rejectWithValue }) => {
     try {
       const response = await roleService.getAll(params)
+
       return response.data
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Lỗi khi tải danh sách vai trò')
@@ -42,6 +44,7 @@ export const fetchRoles = createAsyncThunk(
 export const getRoleDetails = createAsyncThunk('roles/getDetails', async (id: number | string, { rejectWithValue }) => {
   try {
     const response = await roleService.getById(id)
+
     return response
   } catch (error: any) {
     return rejectWithValue(error.response?.data?.message || 'Lỗi khi tải chi tiết vai trò')
@@ -51,6 +54,7 @@ export const getRoleDetails = createAsyncThunk('roles/getDetails', async (id: nu
 export const createRole = createAsyncThunk('roles/create', async (payload: CreateRolePayload, { rejectWithValue }) => {
   try {
     const response = await roleService.create(payload)
+
     return response
   } catch (error: any) {
     return rejectWithValue(error.response?.data?.message || 'Lỗi khi tạo vai trò')
@@ -62,6 +66,7 @@ export const updateRole = createAsyncThunk(
   async ({ id, payload }: { id: number | string; payload: UpdateRolePayload }, { rejectWithValue }) => {
     try {
       const response = await roleService.update(id, payload)
+
       return response
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Lỗi khi cập nhật vai trò')
@@ -72,6 +77,7 @@ export const updateRole = createAsyncThunk(
 export const deleteRole = createAsyncThunk('roles/delete', async (id: number | string, { rejectWithValue }) => {
   try {
     await roleService.delete(id)
+
     return id
   } catch (error: any) {
     return rejectWithValue(error.response?.data?.message || 'Lỗi khi xóa vai trò')
@@ -84,6 +90,7 @@ export const fetchRolePermissions = createAsyncThunk(
   async (id: number | string, { rejectWithValue }) => {
     try {
       const response = await roleService.getPermissions(id)
+
       return response
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Lỗi khi tải quyền hạn của vai trò')
@@ -96,6 +103,7 @@ export const bulkAssignPermissions = createAsyncThunk(
   async ({ id, payload }: { id: number | string; payload: BulkAssignPermissionsPayload }, { rejectWithValue }) => {
     try {
       await roleService.bulkAssignPermissions(id, payload)
+
       return payload.permissionIds
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Lỗi khi gán quyền hạn')
@@ -123,8 +131,10 @@ const roleSlice = createSlice({
       })
       .addCase(fetchRoles.fulfilled, (state, action) => {
         state.isLoading = false
+
         // Handle wrapped response { data: { roles, pagination } }
         const payload = action.payload
+
         state.roles = payload.roles
         state.pagination = payload.pagination
         state.filters = action.meta.arg || {}
@@ -143,6 +153,7 @@ const roleSlice = createSlice({
       .addCase(getRoleDetails.fulfilled, (state, action) => {
         state.isLoading = false
         const payload = action.payload as any
+
         state.selectedRole = payload.data || payload
       })
       .addCase(getRoleDetails.rejected, (state, action) => {
@@ -160,6 +171,7 @@ const roleSlice = createSlice({
         state.isLoading = false
         const payload = action.payload as any
         const newRole = payload.data || payload
+
         state.roles.push(newRole)
         state.pagination.totalItems += 1
       })
@@ -180,9 +192,11 @@ const roleSlice = createSlice({
         const updatedRole = payload.data || payload
 
         const index = state.roles.findIndex(r => r.id === updatedRole.id)
+
         if (index !== -1) {
           state.roles[index] = updatedRole
         }
+
         if (state.selectedRole?.id === updatedRole.id) {
           state.selectedRole = updatedRole
         }
@@ -217,6 +231,7 @@ const roleSlice = createSlice({
       .addCase(fetchRolePermissions.fulfilled, (state, action) => {
         state.isLoading = false
         const payload = action.payload as any
+
         state.rolePermissions = Array.isArray(payload) ? payload : payload.data || []
       })
       .addCase(fetchRolePermissions.rejected, (state, action) => {
@@ -232,6 +247,7 @@ const roleSlice = createSlice({
       })
       .addCase(bulkAssignPermissions.fulfilled, state => {
         state.isLoading = false
+
         // We might want to reload permissions here, but typically we just notify success in component
       })
       .addCase(bulkAssignPermissions.rejected, (state, action) => {

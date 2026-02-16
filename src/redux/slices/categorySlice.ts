@@ -1,4 +1,6 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
+import type { PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+
 import categoryService from '@/services/categoryService'
 import type {
   Category,
@@ -32,6 +34,7 @@ export const fetchCategories = createAsyncThunk(
       const response = await categoryService.getAll(filters)
 
       const apiPagination = response.data.pagination as any
+
       const pagination = {
         page: apiPagination.page,
         itemsPerPage: apiPagination.itemsPerPage,
@@ -53,7 +56,9 @@ export const getCategoryDetails = createAsyncThunk(
   async (id: number | string, { rejectWithValue }) => {
     try {
       const response = await categoryService.getById(id)
-      return response.data
+
+      
+return response.data
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Lỗi khi tải chi tiết danh mục')
     }
@@ -65,7 +70,9 @@ export const createCategory = createAsyncThunk(
   async (payload: CreateCategoryPayload, { rejectWithValue }) => {
     try {
       const response = await categoryService.create(payload)
-      return response.data
+
+      
+return response.data
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Lỗi khi tạo danh mục')
     }
@@ -77,7 +84,9 @@ export const updateCategory = createAsyncThunk(
   async ({ id, payload }: { id: number | string; payload: UpdateCategoryPayload }, { rejectWithValue }) => {
     try {
       const response = await categoryService.update(id, payload)
-      return response.data
+
+      
+return response.data
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Lỗi khi cập nhật danh mục')
     }
@@ -89,7 +98,8 @@ export const deleteCategory = createAsyncThunk(
   async (id: number | string, { rejectWithValue }) => {
     try {
       await categoryService.delete(id)
-      return id
+      
+return id
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Lỗi khi xóa danh mục')
     }
@@ -101,7 +111,8 @@ export const deleteMultipleCategories = createAsyncThunk(
   async (payload: DeleteMultipleCategoriesPayload, { rejectWithValue }) => {
     try {
       await categoryService.deleteMultiple(payload)
-      return payload.ids
+      
+return payload.ids
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Lỗi khi xóa nhiều danh mục')
     }
@@ -180,9 +191,11 @@ const categorySlice = createSlice({
       .addCase(updateCategory.fulfilled, (state, action) => {
         state.isLoading = false
         const index = state.categories.findIndex(c => c.id === action.payload.id)
+
         if (index !== -1) {
           state.categories[index] = action.payload
         }
+
         if (state.selectedCategory?.id === action.payload.id) {
           state.selectedCategory = action.payload
         }
@@ -217,6 +230,7 @@ const categorySlice = createSlice({
       .addCase(deleteMultipleCategories.fulfilled, (state, action) => {
         state.isLoading = false
         const ids = action.payload
+
         state.categories = state.categories.filter(c => !ids.includes(c.id))
         state.pagination.totalItems -= ids.length
       })

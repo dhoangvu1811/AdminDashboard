@@ -9,8 +9,7 @@ import type {
   ProductFilters,
   UploadImageResponse
 } from '@/types/product.types'
-import type { Category, CategoryListResponse } from '@/types/category.types'
-import type { ApiResponse } from '@/types/api.types'
+import type { CategoryListResponse } from '@/types/category.types'
 
 export const productService = {
   /**
@@ -83,6 +82,7 @@ export const productService = {
    */
   uploadImage: async (file: File) => {
     const formData = new FormData()
+
     formData.append('image', file)
 
     const response = await axiosInstance.post<UploadImageResponse>(API_ENDPOINTS.PRODUCTS.UPLOAD_IMAGE, formData, {

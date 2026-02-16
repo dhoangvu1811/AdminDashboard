@@ -93,6 +93,12 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
             </>
           )}
 
+          {check(PERMISSIONS.MANAGE_ORDERS) && (
+            <MenuItem href='/orders' icon={<i className='ri-file-list-3-line' />}>
+              Order Management
+            </MenuItem>
+          )}
+
           {check(PERMISSIONS.MANAGE_ROLES) && (
             <>
               <MenuItem href='/roles' icon={<i className='ri-shield-user-line' />}>

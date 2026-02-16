@@ -85,6 +85,7 @@ export const API_ENDPOINTS = {
     CREATE: '/roles',
     UPDATE: (id: number | string) => `/roles/${id}`,
     DELETE: (id: number | string) => `/roles/${id}`,
+
     // Role Permissions
     GET_PERMISSIONS: (id: number | string) => `/roles/${id}/permissions`,
     ASSIGN_PERMISSION: (id: number | string) => `/roles/${id}/permissions`,

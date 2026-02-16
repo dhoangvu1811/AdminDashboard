@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+
 import { useRouter } from 'next/navigation'
 
 // MUI Imports
@@ -22,6 +23,7 @@ import CircularProgress from '@mui/material/CircularProgress'
 import Tooltip from '@mui/material/Tooltip'
 import Chip from '@mui/material/Chip'
 import TablePagination from '@mui/material/TablePagination'
+
 import { useDebounce } from '@/hooks/useDebounce'
 
 // Redux
@@ -47,7 +49,9 @@ const RoleListPage = () => {
     const timer = setTimeout(() => {
       dispatch(fetchRoles({ page: page + 1, limit: rowsPerPage, search }))
     }, 500)
-    return () => clearTimeout(timer)
+
+    
+return () => clearTimeout(timer)
   }, [dispatch, page, rowsPerPage, search])
 
   const handlePageChange = (event: unknown, newPage: number) => {

@@ -8,6 +8,7 @@ export interface Role {
   id: number
   name: string
   displayName: string
+
   // Assuming timestamps exist based on other entities, though not explicitly in docs for response
   // but usually present. If not, I'll remove them later.
   createdAt?: string

@@ -1,7 +1,9 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
+
 import { useRouter, useParams } from 'next/navigation'
+
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import toast from 'react-hot-toast'
@@ -70,6 +72,7 @@ const RoleForm = () => {
   // Initial Data Load
   useEffect(() => {
     dispatch(fetchPermissions())
+
     if (isEditMode && id) {
       dispatch(getRoleDetails(id as string))
       dispatch(fetchRolePermissions(id as string))
@@ -109,6 +112,7 @@ const RoleForm = () => {
 
   const onSubmit = async (data: RoleSchema) => {
     setIsSubmitting(true)
+
     try {
       let roleId = id as string | number
 
@@ -118,8 +122,10 @@ const RoleForm = () => {
       } else {
         // Create Role
         const res = await dispatch(createRole({ name: data.name, displayName: data.displayName })).unwrap()
+
         // API response might be wrapped in { data: Role }
         const newRole = (res as any).data || res
+
         roleId = newRole.id
       }
 

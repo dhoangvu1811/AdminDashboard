@@ -1,7 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+
 import { useRouter, useParams } from 'next/navigation'
+
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import toast from 'react-hot-toast'
@@ -58,6 +60,7 @@ const PermissionForm = () => {
 
   const onSubmit = async (data: PermissionSchema) => {
     setLoading(true)
+
     try {
       if (isEditMode) {
         await dispatch(
@@ -68,6 +71,7 @@ const PermissionForm = () => {
         await dispatch(createPermission({ name: data.name, displayName: data.displayName })).unwrap()
         toast.success('Tạo quyền hạn thành công')
       }
+
       router.push('/permissions')
     } catch (err: any) {
       console.error(err)

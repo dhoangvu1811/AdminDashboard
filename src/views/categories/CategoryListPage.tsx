@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
@@ -147,6 +148,7 @@ const CategoryListPage = () => {
     } else if (selectedCategory) {
       await dispatch(deleteCategory(selectedCategory.id))
     }
+
     setDeleteDialogOpen(false)
     setSelectedCategory(null)
   }
