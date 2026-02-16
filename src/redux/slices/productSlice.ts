@@ -48,6 +48,7 @@ export const fetchProducts = createAsyncThunk(
       // Map API pagination to internal PaginationInfo
       // As agreed with BE, pagination structure is standardized
       const apiPagination = response.data.pagination as any
+
       const pagination = {
         page: apiPagination.page,
         itemsPerPage: apiPagination.itemsPerPage,
@@ -60,7 +61,9 @@ export const fetchProducts = createAsyncThunk(
       return { products: response.data.products, pagination, filters }
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } } }
-      return rejectWithValue(err.response?.data?.message || 'Không thể tải danh sách sản phẩm')
+
+      
+return rejectWithValue(err.response?.data?.message || 'Không thể tải danh sách sản phẩm')
     }
   }
 )
@@ -71,10 +74,14 @@ export const fetchProducts = createAsyncThunk(
 export const fetchProductCategories = createAsyncThunk('products/fetchCategories', async (_, { rejectWithValue }) => {
   try {
     const response = await productService.getAllCategories()
-    return response.data.categories
+
+    
+return response.data.categories
   } catch (error: unknown) {
     const err = error as { response?: { data?: { message?: string } } }
-    return rejectWithValue(err.response?.data?.message || 'Không thể tải danh sách danh mục')
+
+    
+return rejectWithValue(err.response?.data?.message || 'Không thể tải danh sách danh mục')
   }
 })
 
@@ -86,10 +93,14 @@ export const fetchProductById = createAsyncThunk(
   async (id: number | string, { rejectWithValue }) => {
     try {
       const response = await productService.getById(id)
-      return response.data
+
+      
+return response.data
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } } }
-      return rejectWithValue(err.response?.data?.message || 'Không thể tải chi tiết sản phẩm')
+
+      
+return rejectWithValue(err.response?.data?.message || 'Không thể tải chi tiết sản phẩm')
     }
   }
 )
@@ -102,10 +113,14 @@ export const createProduct = createAsyncThunk(
   async (payload: CreateProductPayload, { rejectWithValue }) => {
     try {
       const response = await productService.create(payload)
-      return response.data
+
+      
+return response.data
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } } }
-      return rejectWithValue(err.response?.data?.message || 'Không thể tạo sản phẩm')
+
+      
+return rejectWithValue(err.response?.data?.message || 'Không thể tạo sản phẩm')
     }
   }
 )
@@ -118,10 +133,14 @@ export const updateProduct = createAsyncThunk(
   async ({ id, payload }: { id: number | string; payload: UpdateProductPayload }, { rejectWithValue }) => {
     try {
       const response = await productService.update(id, payload)
-      return response.data
+
+      
+return response.data
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } } }
-      return rejectWithValue(err.response?.data?.message || 'Không thể cập nhật sản phẩm')
+
+      
+return rejectWithValue(err.response?.data?.message || 'Không thể cập nhật sản phẩm')
     }
   }
 )
@@ -132,10 +151,13 @@ export const updateProduct = createAsyncThunk(
 export const deleteProduct = createAsyncThunk('products/delete', async (id: number | string, { rejectWithValue }) => {
   try {
     await productService.delete(id)
-    return id
+    
+return id
   } catch (error: unknown) {
     const err = error as { response?: { data?: { message?: string } } }
-    return rejectWithValue(err.response?.data?.message || 'Không thể xóa sản phẩm')
+
+    
+return rejectWithValue(err.response?.data?.message || 'Không thể xóa sản phẩm')
   }
 })
 
@@ -147,10 +169,13 @@ export const deleteMultipleProducts = createAsyncThunk(
   async (payload: DeleteMultipleProductsPayload, { rejectWithValue }) => {
     try {
       await productService.deleteMultiple(payload)
-      return payload.productIds
+      
+return payload.productIds
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } } }
-      return rejectWithValue(err.response?.data?.message || 'Không thể xóa nhiều sản phẩm')
+
+      
+return rejectWithValue(err.response?.data?.message || 'Không thể xóa nhiều sản phẩm')
     }
   }
 )
@@ -238,12 +263,15 @@ const productSlice = createSlice({
       .addCase(updateProduct.fulfilled, (state, action) => {
         state.isLoading = false
         const index = state.products.findIndex(p => p.id === action.payload.id)
+
         if (index !== -1) {
           state.products[index] = action.payload
         }
+
         if (state.selectedProduct?.id === action.payload.id) {
           state.selectedProduct = action.payload
         }
+
         toast.success('Cập nhật sản phẩm thành công!')
       })
       .addCase(updateProduct.rejected, (state, action) => {
@@ -277,6 +305,7 @@ const productSlice = createSlice({
       .addCase(deleteMultipleProducts.fulfilled, (state, action) => {
         state.isLoading = false
         const deletedIds = action.payload.map(id => String(id))
+
         state.products = state.products.filter(p => !deletedIds.includes(String(p.id)))
         state.pagination.totalItems -= action.payload.length
         toast.success(`Đã xóa ${action.payload.length} sản phẩm!`)

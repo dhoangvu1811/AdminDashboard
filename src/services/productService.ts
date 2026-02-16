@@ -83,6 +83,7 @@ export const productService = {
    */
   uploadImage: async (file: File) => {
     const formData = new FormData()
+
     formData.append('image', file)
 
     const response = await axiosInstance.post<UploadImageResponse>(API_ENDPOINTS.PRODUCTS.UPLOAD_IMAGE, formData, {

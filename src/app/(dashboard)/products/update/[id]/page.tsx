@@ -1,15 +1,19 @@
 'use client'
 
 import { useEffect } from 'react'
+
 import { useParams, useRouter } from 'next/navigation'
+
+import CircularProgress from '@mui/material/CircularProgress'
+
+import Box from '@mui/material/Box'
+
+import Typography from '@mui/material/Typography'
 
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
 import { fetchProductById, clearSelectedProduct } from '@/redux/slices/productSlice'
 import ProductForm from '@/views/products/ProductForm'
 
-import CircularProgress from '@mui/material/CircularProgress'
-import Box from '@mui/material/Box'
-import Typography from '@mui/material/Typography'
 
 const ProductUpdatePage = () => {
   const { id } = useParams()

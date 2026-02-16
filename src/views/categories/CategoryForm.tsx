@@ -1,7 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+
 import { useRouter, useParams } from 'next/navigation'
+
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import toast from 'react-hot-toast'
@@ -68,6 +70,7 @@ const CategoryForm = () => {
         description: selectedCategory.description || '',
         image: selectedCategory.image || null
       })
+
       if (selectedCategory.image) {
         setExistingImages([selectedCategory.image])
       } else {
@@ -78,6 +81,7 @@ const CategoryForm = () => {
 
   const onSubmit = async (data: CategorySchema) => {
     setIsSubmitting(true)
+
     try {
       if (isEditMode && id) {
         await dispatch(
@@ -103,6 +107,7 @@ const CategoryForm = () => {
         ).unwrap()
         toast.success('Tạo danh mục thành công!')
       }
+
       router.push('/categories')
     } catch (err: any) {
       console.error(err)

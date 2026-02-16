@@ -85,6 +85,7 @@ export const productSchema = z.object({
   description: z.string().optional(),
   discount: z.coerce.number().min(0).max(100).optional().default(0),
   status: z.enum(['active', 'inactive']).default('active'),
+
   // Images will be handled separately in the form, but we can validate logic if needed
   image: z.string().optional()
 })
@@ -99,6 +100,7 @@ export type ProductSchema = z.infer<typeof productSchema>
 export const categorySchema = z.object({
   name: z.string().min(2, 'Tên danh mục phải có ít nhất 2 ký tự').max(100, 'Tên danh mục không được quá 100 ký tự'),
   description: z.string().max(1000, 'Mô tả không được quá 1000 ký tự').optional(),
+
   // Image handling in form
   image: z
     .union([z.instanceof(File), z.string()])

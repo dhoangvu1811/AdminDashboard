@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
+
 import permissionService from '@/services/permissionService'
 import type {
   Permission,
@@ -30,7 +31,9 @@ export const fetchPermissions = createAsyncThunk(
   async (params: PermissionFilters | undefined, { rejectWithValue }) => {
     try {
       const response = await permissionService.getAll(params)
-      return response.data
+
+      
+return response.data
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Lỗi khi tải danh sách quyền hạn')
     }
@@ -40,7 +43,9 @@ export const fetchPermissions = createAsyncThunk(
 export const fetchMyPermissions = createAsyncThunk('permissions/fetchMe', async (_, { rejectWithValue }) => {
   try {
     const response = await permissionService.getMyPermissions()
-    return response
+
+    
+return response
   } catch (error: any) {
     return rejectWithValue(error.response?.data?.message || 'Lỗi khi tải quyền hạn của bạn')
   }
@@ -51,7 +56,9 @@ export const createPermission = createAsyncThunk(
   async (payload: CreatePermissionPayload, { rejectWithValue }) => {
     try {
       const response = await permissionService.create(payload)
-      return response
+
+      
+return response
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Lỗi khi tạo quyền hạn')
     }
@@ -63,7 +70,9 @@ export const updatePermission = createAsyncThunk(
   async ({ id, payload }: { id: number | string; payload: UpdatePermissionPayload }, { rejectWithValue }) => {
     try {
       const response = await permissionService.update(id, payload)
-      return response
+
+      
+return response
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Lỗi khi cập nhật quyền hạn')
     }
@@ -75,7 +84,8 @@ export const deletePermission = createAsyncThunk(
   async (id: number | string, { rejectWithValue }) => {
     try {
       await permissionService.delete(id)
-      return id
+      
+return id
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Lỗi khi xóa quyền hạn')
     }
@@ -99,6 +109,7 @@ const permissionSlice = createSlice({
       .addCase(fetchPermissions.fulfilled, (state, action) => {
         state.isLoading = false
         const payload = action.payload
+
         state.permissions = payload.permissions
         state.pagination = payload.pagination
         state.filters = action.meta.arg || {}
@@ -111,6 +122,7 @@ const permissionSlice = createSlice({
     builder.addCase(createPermission.fulfilled, (state, action) => {
       const payload = action.payload as any
       const newPermission = payload.data || payload
+
       state.permissions.push(newPermission)
       state.pagination.totalItems += 1
     })
@@ -119,6 +131,7 @@ const permissionSlice = createSlice({
       const payload = action.payload as any
       const updatedPermission = payload.data || payload
       const index = state.permissions.findIndex(p => p.id === updatedPermission.id)
+
       if (index !== -1) {
         state.permissions[index] = updatedPermission
       }
@@ -131,6 +144,7 @@ const permissionSlice = createSlice({
 
     builder.addCase(fetchMyPermissions.fulfilled, (state, action) => {
       const payload = action.payload as any
+
       state.myPermissions = Array.isArray(payload) ? payload : payload.data || []
     })
   }

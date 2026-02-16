@@ -76,6 +76,7 @@ const UserCreatePage = () => {
     if (roles.length > 0) {
       // Potentially set default role: e.g. 'user' or just the last one
       const userRole = roles.find(r => r.name === 'user')
+
       if (userRole) {
         setValue('role', userRole.id)
       } else if (roles.length > 0) {

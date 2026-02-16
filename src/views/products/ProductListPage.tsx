@@ -130,6 +130,7 @@ const ProductListPage = () => {
 
   const handleSelectProduct = (productId: number) => {
     const idStr = String(productId)
+
     setSelectedProducts(prev => (prev.includes(idStr) ? prev.filter(id => id !== idStr) : [...prev, idStr]))
   }
 
@@ -173,6 +174,7 @@ const ProductListPage = () => {
     } else if (selectedProduct) {
       await dispatch(deleteProduct(selectedProduct.id))
     }
+
     setDeleteDialogOpen(false)
     setSelectedProduct(null)
   }

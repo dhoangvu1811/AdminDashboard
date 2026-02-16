@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+
 import { useRouter } from 'next/navigation'
 
 // MUI Imports
@@ -43,7 +44,9 @@ const PermissionListPage = () => {
     const timer = setTimeout(() => {
       dispatch(fetchPermissions({ page: page + 1, limit: rowsPerPage, search }))
     }, 500)
-    return () => clearTimeout(timer)
+
+    
+return () => clearTimeout(timer)
   }, [dispatch, page, rowsPerPage, search])
 
   const handlePageChange = (event: unknown, newPage: number) => {
