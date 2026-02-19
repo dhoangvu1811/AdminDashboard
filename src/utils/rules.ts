@@ -131,3 +131,55 @@ export const permissionSchema = z.object({
 })
 
 export type PermissionSchema = z.infer<typeof permissionSchema>
+
+export const voucherSchema = z
+  .object({
+    code: z
+      .string()
+      .min(3, 'Mã voucher phải có ít nhất 3 ký tự')
+      .max(50, 'Mã voucher không được vượt quá 50 ký tự')
+      .regex(/^[A-Z0-9\-_]+$/, 'Mã voucher chỉ gồm A-Z, 0-9, gạch ngang hoặc gạch dưới')
+      .transform(val => val.toUpperCase().trim()),
+    type: z.enum(['percent', 'fixed'] as const),
+    amount: z.coerce.number().positive('Giá trị giảm phải lớn hơn 0'),
+    maxDiscount: z.coerce.number().min(0, 'Giảm tối đa không được âm').optional().nullable(),
+    minOrderValue: z.coerce.number().min(0, 'Giá trị đơn tối thiểu không được âm').optional().nullable(),
+    usageLimit: z.coerce
+      .number()
+      .int('Giới hạn sử dụng phải là số nguyên')
+      .min(0, 'Giới hạn sử dụng không được âm')
+      .optional()
+      .nullable(),
+    startDate: z.string().optional().nullable(),
+    endDate: z.string().optional().nullable(),
+    isActive: z.boolean().default(true),
+    description: z.string().optional().nullable()
+  })
+  .refine(
+    data => {
+      if (data.type === 'percent' && Number(data.amount) > 100) {
+        return false
+      }
+
+      return true
+    },
+    {
+      message: 'Giá trị phần trăm không được vượt quá 100%',
+      path: ['amount']
+    }
+  )
+  .refine(
+    data => {
+      if (data.startDate && data.endDate) {
+        return new Date(data.endDate) > new Date(data.startDate)
+      }
+
+      return true
+    },
+    {
+      message: 'Ngày kết thúc phải sau ngày bắt đầu',
+      path: ['endDate']
+    }
+  )
+
+export type VoucherSchema = z.infer<typeof voucherSchema>

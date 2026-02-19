@@ -68,9 +68,13 @@ export const API_ENDPOINTS = {
   // Voucher Management
   VOUCHERS: {
     ALL: '/vouchers/all',
+    DETAILS: (id: number | string) => `/vouchers/details/${id}`,
     CREATE: '/vouchers/create',
     UPDATE: (id: number | string) => `/vouchers/update/${id}`,
-    DELETE: (id: number | string) => `/vouchers/delete/${id}`
+    DELETE: (id: number | string) => `/vouchers/delete/${id}`,
+    DELETE_MULTIPLE: '/vouchers/delete-multiple',
+    VERIFY: '/vouchers/verify',
+    ACTIVE_PUBLIC: '/vouchers/active'
   },
 
   // Contact/Social
