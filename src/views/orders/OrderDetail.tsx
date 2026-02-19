@@ -1,9 +1,10 @@
+/* eslint-disable react/no-unescaped-entities */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client'
 
 import { useEffect, useState } from 'react'
 
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 
 // MUI Imports
 import Box from '@mui/material/Box'
@@ -32,6 +33,7 @@ import TimelineDot from '@mui/lab/TimelineDot'
 import TimelineOppositeContent from '@mui/lab/TimelineOppositeContent'
 import MenuItem from '@mui/material/MenuItem'
 import Select from '@mui/material/Select'
+import type { SelectChangeEvent } from '@mui/material/Select'
 import FormControl from '@mui/material/FormControl'
 import InputLabel from '@mui/material/InputLabel'
 import Alert from '@mui/material/Alert'
@@ -55,7 +57,7 @@ import {
 
 // import { PAYMENT_STATUS_NAMES, ORDER_STATUS_NAMES, PAYMENT_METHOD_NAMES, statusObj } from '@/constants/order'
 import type { OrderStatus, PaymentMethod, PaymentStatus } from '@/types/order.types'
-import { PAYMENT_METHOD_NAMES, statusObj } from '@/constants/order'
+import { PAYMENT_METHOD_NAMES, statusObj, paymentStatusObj } from '@/constants/order'
 
 interface OrderDetailProps {
   id: string
@@ -69,6 +71,7 @@ const OrderDetail = ({ id }: OrderDetailProps) => {
 
   const [statusUpdate, setStatusUpdate] = useState<OrderStatus | ''>('')
   const [openStatusDialog, setOpenStatusDialog] = useState(false)
+  const [openMarkPaidDialog, setOpenMarkPaidDialog] = useState(false)
 
   // Fetch Data
   useEffect(() => {
@@ -83,8 +86,8 @@ const OrderDetail = ({ id }: OrderDetailProps) => {
   }, [dispatch, id])
 
   // Handlers
-  const handleStatusChange = (e: any) => {
-    setStatusUpdate(e.target.value)
+  const handleStatusChange = (e: SelectChangeEvent) => {
+    setStatusUpdate(e.target.value as OrderStatus)
     setOpenStatusDialog(true)
   }
 
@@ -92,18 +95,24 @@ const OrderDetail = ({ id }: OrderDetailProps) => {
     if (statusUpdate && selectedOrder) {
       await dispatch(updateOrderStatus({ id: selectedOrder.id, status: statusUpdate }))
       setOpenStatusDialog(false)
+      setStatusUpdate('')
 
       // Refresh logs
       dispatch(fetchOrderLogs(selectedOrder.id))
     }
   }
 
-  const handleMarkPaid = async () => {
+  const handleMarkPaid = () => {
     if (selectedOrder) {
-      if (confirm('Xác nhận đơn hàng đã thanh toán?')) {
-        await dispatch(markOrderPaid(selectedOrder.id))
-        dispatch(fetchOrderLogs(selectedOrder.id))
-      }
+      setOpenMarkPaidDialog(true)
+    }
+  }
+
+  const confirmMarkPaid = async () => {
+    if (selectedOrder) {
+      await dispatch(markOrderPaid(selectedOrder.id))
+      setOpenMarkPaidDialog(false)
+      dispatch(fetchOrderLogs(selectedOrder.id))
     }
   }
 
@@ -113,6 +122,33 @@ const OrderDetail = ({ id }: OrderDetailProps) => {
         await dispatch(cancelOrder(selectedOrder.id))
         dispatch(fetchOrderLogs(selectedOrder.id))
       }
+    }
+  }
+
+  // Helper: nhãn tiếng Việt cho action
+  const ACTION_LABELS: Record<string, string> = {
+    create: 'Tạo đơn hàng',
+    updateStatus: 'Cập nhật trạng thái',
+    updatePaymentStatus: 'Cập nhật thanh toán',
+    markPaid: 'Xác nhận thanh toán',
+    cancel: 'Hủy đơn hàng'
+  }
+
+  // Helper: màu TimelineDot theo action
+  const getActionDotColor = (action: string): 'primary' | 'success' | 'error' | 'warning' | 'info' | 'grey' => {
+    switch (action) {
+      case 'create':
+        return 'primary'
+      case 'markPaid':
+        return 'success'
+      case 'cancel':
+        return 'error'
+      case 'updateStatus':
+        return 'info'
+      case 'updatePaymentStatus':
+        return 'warning'
+      default:
+        return 'grey'
     }
   }
 
@@ -225,20 +261,91 @@ const OrderDetail = ({ id }: OrderDetailProps) => {
           <CardHeader title='Lịch sử đơn hàng' />
           <CardContent>
             <Timeline position='right'>
-              {orderLogs?.map(log => (
+              {orderLogs?.map((log, index) => (
                 <TimelineItem key={log.id}>
-                  <TimelineOppositeContent color='text.secondary'>{formatDate(log.at)}</TimelineOppositeContent>
+                  <TimelineOppositeContent color='text.secondary' sx={{ flex: '0 0 140px' }}>
+                    {formatDate(log.at)}
+                  </TimelineOppositeContent>
                   <TimelineSeparator>
-                    <TimelineDot color='primary' variant='outlined' />
-                    <TimelineConnector />
+                    <TimelineDot color={getActionDotColor(log.action)} />
+                    {index < (orderLogs?.length ?? 0) - 1 && <TimelineConnector />}
                   </TimelineSeparator>
-                  <TimelineContent>
-                    <Typography fontWeight={500}>{log.action}</Typography>
-                    <Typography variant='caption'>
-                      Bởi: {log.performedByRole} {log.performedBy ? `(${log.performedBy.displayName})` : ''}
+                  <TimelineContent sx={{ pb: 3 }}>
+                    {/* Tên hành động */}
+                    <Typography fontWeight={600} variant='body1'>
+                      {ACTION_LABELS[log.action] ?? log.action}
                     </Typography>
+
+                    {/* Người thực hiện */}
+                    <Typography variant='caption' color='text.secondary' display='block' sx={{ mb: 0.5 }}>
+                      Bởi:{' '}
+                      <strong>
+                        {log.performedByRole === 'admin'
+                          ? 'Quản trị viên'
+                          : log.performedByRole === 'user'
+                            ? 'Khách hàng'
+                            : 'Hệ thống'}
+                      </strong>
+                      {log.performedBy ? ` — ${log.performedBy.displayName}` : ''}
+                    </Typography>
+
+                    {/* Chuyển trạng thái đơn hàng */}
+                    {(log.fromStatus || log.toStatus) && (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap', mb: 0.5 }}>
+                        <Typography variant='caption' color='text.secondary'>
+                          Đơn hàng:
+                        </Typography>
+                        {log.fromStatus && (
+                          <Chip
+                            label={statusObj[log.fromStatus]?.label ?? log.fromStatus}
+                            color={statusObj[log.fromStatus]?.color ?? 'default'}
+                            size='small'
+                            variant='outlined'
+                          />
+                        )}
+                        {log.fromStatus && log.toStatus && (
+                          <Typography variant='caption' color='text.secondary'>
+                            →
+                          </Typography>
+                        )}
+                        {log.toStatus && (
+                          <Chip
+                            label={statusObj[log.toStatus]?.label ?? log.toStatus}
+                            color={statusObj[log.toStatus]?.color ?? 'default'}
+                            size='small'
+                          />
+                        )}
+                      </Box>
+                    )}
+
+                    {/* Chuyển trạng thái thanh toán */}
+                    {/* {(log.fromPaymentStatus || log.toPaymentStatus) && (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap', mb: 0.5 }}>
+                        <Typography variant='caption' color='text.secondary'>Thanh toán:</Typography>
+                        {log.fromPaymentStatus && (
+                          <Chip
+                            label={paymentStatusObj[log.fromPaymentStatus]?.label ?? log.fromPaymentStatus}
+                            color={paymentStatusObj[log.fromPaymentStatus]?.color ?? 'default'}
+                            size='small'
+                            variant='outlined'
+                          />
+                        )}
+                        {log.fromPaymentStatus && log.toPaymentStatus && (
+                          <Typography variant='caption' color='text.secondary'>→</Typography>
+                        )}
+                        {log.toPaymentStatus && (
+                          <Chip
+                            label={paymentStatusObj[log.toPaymentStatus]?.label ?? log.toPaymentStatus}
+                            color={paymentStatusObj[log.toPaymentStatus]?.color ?? 'default'}
+                            size='small'
+                          />
+                        )}
+                      </Box>
+                    )} */}
+
+                    {/* Ghi chú */}
                     {log.note && (
-                      <Typography variant='body2' color='text.secondary'>
+                      <Typography variant='body2' color='text.secondary' sx={{ fontStyle: 'italic', mt: 0.25 }}>
                         {log.note}
                       </Typography>
                     )}
@@ -326,7 +433,7 @@ const OrderDetail = ({ id }: OrderDetailProps) => {
                 disabled={selectedOrder.status === 'CANCELLED' || selectedOrder.status === 'DELIVERED'}
               >
                 {Object.keys(statusObj).map(status => (
-                  <MenuItem key={status} value={status}>
+                  <MenuItem key={status} value={status} disabled={status === selectedOrder.status}>
                     {statusObj[status].label}
                   </MenuItem>
                 ))}
@@ -344,8 +451,14 @@ const OrderDetail = ({ id }: OrderDetailProps) => {
         </Card>
       </Grid>
 
-      {/* Confirm Dialog */}
-      <Dialog open={openStatusDialog} onClose={() => setOpenStatusDialog(false)}>
+      {/* Confirm Status Dialog */}
+      <Dialog
+        open={openStatusDialog}
+        onClose={() => {
+          setOpenStatusDialog(false)
+          setStatusUpdate('')
+        }}
+      >
         <DialogTitle>Xác nhận cập nhật</DialogTitle>
         <DialogContent>
           <DialogContentText>
@@ -353,9 +466,33 @@ const OrderDetail = ({ id }: OrderDetailProps) => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenStatusDialog(false)}>Hủy</Button>
+          <Button
+            onClick={() => {
+              setOpenStatusDialog(false)
+              setStatusUpdate('')
+            }}
+          >
+            Hủy
+          </Button>
           <Button onClick={confirmStatusUpdate} autoFocus>
             Đồng ý
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Confirm Mark Paid Dialog */}
+      <Dialog open={openMarkPaidDialog} onClose={() => setOpenMarkPaidDialog(false)}>
+        <DialogTitle>Xác nhận thanh toán</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Xác nhận đơn hàng <strong>#{selectedOrder.orderCode}</strong> đã được thanh toán thành công? Hành động này
+            sẽ cập nhật trạng thái thanh toán thành <strong>Đã thanh toán</strong> và không thể hoàn tác.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenMarkPaidDialog(false)}>Hủy</Button>
+          <Button onClick={confirmMarkPaid} variant='contained' color='success' autoFocus>
+            Xác nhận
           </Button>
         </DialogActions>
       </Dialog>

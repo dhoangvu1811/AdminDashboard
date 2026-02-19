@@ -7,10 +7,9 @@ import productReducer from './slices/productSlice'
 import categoryReducer from './slices/categorySlice'
 import roleReducer from './slices/roleSlice'
 import permissionReducer from './slices/permissionSlice'
-
 import orderReducer from './slices/orderSlice'
+import voucherReducer from './slices/voucherSlice'
 
-// import voucherReducer from './slices/voucherSlice'
 // import contactReducer from './slices/contactSlice'
 
 export const store = configureStore({
@@ -21,9 +20,9 @@ export const store = configureStore({
     categories: categoryReducer,
     roles: roleReducer,
     permissions: permissionReducer,
-    orders: orderReducer
+    orders: orderReducer,
+    vouchers: voucherReducer
 
-    // vouchers: voucherReducer,
     // contacts: contactReducer,
   },
   middleware: getDefaultMiddleware =>

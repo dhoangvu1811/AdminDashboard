@@ -64,9 +64,9 @@ export const fetchOrders = createAsyncThunk(
       const pagination = {
         page: response.pagination.page,
         itemsPerPage: response.pagination.itemsPerPage,
-        totalItems: response.pagination.total,
+        totalItems: response.pagination.totalItems,
         totalPages: response.pagination.totalPages,
-        hasNextPage: response.pagination.page < response.pagination.totalPages,
+        hasNextPage: response.pagination.hasNextPage,
         hasPrevPage: response.pagination.page > 1
       }
 
