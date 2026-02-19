@@ -118,8 +118,9 @@ export interface OrderListResponse {
     pagination: {
       page: number
       itemsPerPage: number
-      total: number
+      totalItems: number
       totalPages: number
+      hasNextPage: boolean
     }
   }
 }
