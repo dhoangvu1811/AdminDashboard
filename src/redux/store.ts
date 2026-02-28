@@ -9,6 +9,7 @@ import roleReducer from './slices/roleSlice'
 import permissionReducer from './slices/permissionSlice'
 import orderReducer from './slices/orderSlice'
 import voucherReducer from './slices/voucherSlice'
+import notificationReducer from './slices/notificationSlice'
 
 // import contactReducer from './slices/contactSlice'
 
@@ -21,7 +22,8 @@ export const store = configureStore({
     roles: roleReducer,
     permissions: permissionReducer,
     orders: orderReducer,
-    vouchers: voucherReducer
+    vouchers: voucherReducer,
+    notifications: notificationReducer
 
     // contacts: contactReducer,
   },

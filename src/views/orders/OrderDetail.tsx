@@ -72,6 +72,7 @@ const OrderDetail = ({ id }: OrderDetailProps) => {
   const [statusUpdate, setStatusUpdate] = useState<OrderStatus | ''>('')
   const [openStatusDialog, setOpenStatusDialog] = useState(false)
   const [openMarkPaidDialog, setOpenMarkPaidDialog] = useState(false)
+  const [openCancelDialog, setOpenCancelDialog] = useState(false)
 
   // Fetch Data
   useEffect(() => {
@@ -116,12 +117,17 @@ const OrderDetail = ({ id }: OrderDetailProps) => {
     }
   }
 
-  const handleCancelOrder = async () => {
+  const handleCancelOrder = () => {
     if (selectedOrder) {
-      if (confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')) {
-        await dispatch(cancelOrder(selectedOrder.id))
-        dispatch(fetchOrderLogs(selectedOrder.id))
-      }
+      setOpenCancelDialog(true)
+    }
+  }
+
+  const confirmCancelOrder = async () => {
+    if (selectedOrder) {
+      await dispatch(cancelOrder(selectedOrder.id))
+      setOpenCancelDialog(false)
+      dispatch(fetchOrderLogs(selectedOrder.id))
     }
   }
 
@@ -194,7 +200,8 @@ const OrderDetail = ({ id }: OrderDetailProps) => {
               <TableHead>
                 <TableRow>
                   <TableCell>Sản phẩm</TableCell>
-                  <TableCell>Giá</TableCell>
+                  <TableCell>Đơn giá</TableCell>
+                  <TableCell align='center'>Giảm giá</TableCell>
                   <TableCell>SL</TableCell>
                   <TableCell align='right'>Tổng</TableCell>
                 </TableRow>
@@ -215,7 +222,31 @@ const OrderDetail = ({ id }: OrderDetailProps) => {
                         </Box>
                       </Box>
                     </TableCell>
-                    <TableCell>{formatCurrency(item.unitPrice)}</TableCell>
+                    <TableCell>
+                      <Box>
+                        {item.discount > 0 ? (
+                          <>
+                            <Typography variant='body2' sx={{ textDecoration: 'line-through' }} color='text.secondary'>
+                              {formatCurrency(item.unitPrice)}
+                            </Typography>
+                            <Typography variant='body2' fontWeight={500} color='error'>
+                              {formatCurrency(item.unitPrice * (1 - item.discount / 100))}
+                            </Typography>
+                          </>
+                        ) : (
+                          <Typography variant='body2'>{formatCurrency(item.unitPrice)}</Typography>
+                        )}
+                      </Box>
+                    </TableCell>
+                    <TableCell align='center'>
+                      {item.discount > 0 ? (
+                        <Chip label={`-${item.discount}%`} size='small' color='error' variant='filled' />
+                      ) : (
+                        <Typography variant='body2' color='text.secondary' sx={{ textAlign: 'center' }}>
+                          —
+                        </Typography>
+                      )}
+                    </TableCell>
                     <TableCell>{item.quantity}</TableCell>
                     <TableCell align='right'>{formatCurrency(item.lineTotal)}</TableCell>
                   </TableRow>
@@ -238,12 +269,52 @@ const OrderDetail = ({ id }: OrderDetailProps) => {
                   <Typography>Phí vận chuyển:</Typography>
                   <Typography fontWeight={500}>{formatCurrency(selectedOrder.totals?.shippingFee || 0)}</Typography>
                 </Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography>Giảm giá:</Typography>
-                  <Typography fontWeight={500} color='error'>
-                    -{formatCurrency(selectedOrder.totals?.discount || 0)}
-                  </Typography>
-                </Box>
+                {/* Giảm giá sản phẩm - tính trực tiếp từ items */}
+                {(() => {
+                  const productDiscount =
+                    selectedOrder.items?.reduce(
+                      (sum, item) =>
+                        sum + (item.discount > 0 ? ((item.unitPrice * item.discount) / 100) * item.quantity : 0),
+                      0
+                    ) || 0
+
+                  return productDiscount > 0 ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                      <Typography color='text.secondary' variant='body2'>
+                        Giảm giá sản phẩm:
+                      </Typography>
+                      <Typography fontWeight={500} color='error' variant='body2'>
+                        -{formatCurrency(productDiscount)}
+                      </Typography>
+                    </Box>
+                  ) : null
+                })()}
+
+                {/* Giảm giá voucher - từng voucher riêng lẻ */}
+                {selectedOrder.vouchers && selectedOrder.vouchers.length > 0
+                  ? selectedOrder.vouchers.map(voucher => (
+                      <Box key={voucher.code} sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography color='text.secondary' variant='body2'>
+                            Voucher
+                          </Typography>
+                          <Chip label={voucher.code} size='small' variant='outlined' color='success' />
+                        </Box>
+                        <Typography fontWeight={500} color='error' variant='body2'>
+                          -{formatCurrency(voucher.discountApplied)}
+                        </Typography>
+                      </Box>
+                    ))
+                  : // Fallback: không có voucher, hiển thị tổng giảm giá nếu chưa tách được
+                    !selectedOrder.items?.some(item => item.discount > 0) &&
+                    (selectedOrder.totals?.discount || 0) > 0 && (
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                        <Typography>Giảm giá:</Typography>
+                        <Typography fontWeight={500} color='error'>
+                          -{formatCurrency(selectedOrder.totals?.discount || 0)}
+                        </Typography>
+                      </Box>
+                    )}
                 <Divider sx={{ my: 1 }} />
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                   <Typography variant='h6'>Tổng cộng:</Typography>
@@ -432,11 +503,13 @@ const OrderDetail = ({ id }: OrderDetailProps) => {
                 onChange={handleStatusChange}
                 disabled={selectedOrder.status === 'CANCELLED' || selectedOrder.status === 'DELIVERED'}
               >
-                {Object.keys(statusObj).map(status => (
-                  <MenuItem key={status} value={status} disabled={status === selectedOrder.status}>
-                    {statusObj[status].label}
-                  </MenuItem>
-                ))}
+                {Object.keys(statusObj)
+                  .filter(status => status !== 'CANCELLED')
+                  .map(status => (
+                    <MenuItem key={status} value={status} disabled={status === selectedOrder.status}>
+                      {statusObj[status].label}
+                    </MenuItem>
+                  ))}
               </Select>
             </FormControl>
             <Typography variant='caption' color='text.secondary' sx={{ display: 'block', mb: 2 }}>
@@ -493,6 +566,23 @@ const OrderDetail = ({ id }: OrderDetailProps) => {
           <Button onClick={() => setOpenMarkPaidDialog(false)}>Hủy</Button>
           <Button onClick={confirmMarkPaid} variant='contained' color='success' autoFocus>
             Xác nhận
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Confirm Cancel Order Dialog */}
+      <Dialog open={openCancelDialog} onClose={() => setOpenCancelDialog(false)}>
+        <DialogTitle>Xác nhận hủy đơn hàng</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Bạn có chắc chắn muốn hủy đơn hàng <strong>#{selectedOrder.orderCode}</strong>? Hành động này{' '}
+            <strong>không thể hoàn tác</strong>.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenCancelDialog(false)}>Quay lại</Button>
+          <Button onClick={confirmCancelOrder} variant='contained' color='error' autoFocus>
+            Hủy đơn hàng
           </Button>
         </DialogActions>
       </Dialog>
