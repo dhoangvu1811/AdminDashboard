@@ -119,6 +119,10 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
           <MenuItem href='/account-settings' icon={<i className='ri-user-settings-line' />}>
             Account Settings
           </MenuItem>
+
+          <MenuItem href='/notifications' icon={<i className='ri-notification-3-line' />}>
+            Notification History
+          </MenuItem>
         </MenuSection>
       </Menu>
     </ScrollWrapper>
