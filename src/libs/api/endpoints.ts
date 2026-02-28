@@ -106,6 +106,15 @@ export const API_ENDPOINTS = {
     CREATE: '/permissions',
     UPDATE: (id: number | string) => `/permissions/${id}`,
     DELETE: (id: number | string) => `/permissions/${id}`
+  },
+
+  // Notification Management
+  NOTIFICATIONS: {
+    LIST: '/notifications',
+    MARK_READ: (id: number | string) => `/notifications/${id}/read`,
+    MARK_ALL_READ: '/notifications/read-all',
+    DELETE: (id: number | string) => `/notifications/${id}`,
+    DELETE_READ: '/notifications/delete-read'
   }
 } as const
 
