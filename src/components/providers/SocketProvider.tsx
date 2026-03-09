@@ -19,6 +19,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import type { RootState, AppDispatch } from '@/redux/store'
 import { fetchOrders } from '@/redux/slices/orderSlice'
 import { addRealtimeNotification, clearNotifications } from '@/redux/slices/notificationSlice'
+import { ORDER_STATUS_NAMES } from '@/constants/order'
 import {
   SOCKET_EVENTS,
   type OrderNewPayload,
@@ -100,7 +101,10 @@ export function SocketProvider({ children }: { children: ReactNode }) {
    */
   const handleOrderStatusUpdated = useCallback(
     (data: OrderStatusUpdatedPayload) => {
-      toast(`Đơn #${data.orderCode}: ${data.fromStatus} → ${data.toStatus}`, {
+      const fromLabel = ORDER_STATUS_NAMES[data.fromStatus as keyof typeof ORDER_STATUS_NAMES] ?? data.fromStatus
+      const toLabel = ORDER_STATUS_NAMES[data.toStatus as keyof typeof ORDER_STATUS_NAMES] ?? data.toStatus
+
+      toast(`Đơn #${data.orderCode}: ${fromLabel} → ${toLabel}`, {
         icon: '📦',
         duration: 4000
       })
