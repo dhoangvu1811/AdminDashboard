@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 
 import { useRouter } from 'next/navigation'
 
@@ -56,8 +56,16 @@ import {
 } from '@/redux/slices/orderSlice'
 
 // import { PAYMENT_STATUS_NAMES, ORDER_STATUS_NAMES, PAYMENT_METHOD_NAMES, statusObj } from '@/constants/order'
-import type { OrderStatus, PaymentMethod, PaymentStatus } from '@/types/order.types'
+import type { OrderStatus, PaymentMethod, PaymentStatus, LogEntry } from '@/types/order.types'
 import { PAYMENT_METHOD_NAMES, statusObj, paymentStatusObj } from '@/constants/order'
+import { useSocket } from '@/components/providers/SocketProvider'
+import {
+  SOCKET_EVENTS,
+  type OrderStatusUpdatedPayload,
+  type OrderPaymentUpdatedPayload,
+  type OrderMarkPaidPayload,
+  type OrderCancelledPayload
+} from '@/types/socket.types'
 
 interface OrderDetailProps {
   id: string
@@ -68,6 +76,7 @@ const OrderDetail = ({ id }: OrderDetailProps) => {
   const dispatch = useAppDispatch()
 
   const { selectedOrder, orderLogs, isLoadingDetail, error } = useAppSelector(state => state.orders)
+  const { socket } = useSocket()
 
   const [statusUpdate, setStatusUpdate] = useState<OrderStatus | ''>('')
   const [openStatusDialog, setOpenStatusDialog] = useState(false)
@@ -85,6 +94,32 @@ const OrderDetail = ({ id }: OrderDetailProps) => {
       dispatch(clearSelectedOrder())
     }
   }, [dispatch, id])
+
+  // Lắng nghe socket events để làm mới lịch sử đơn hàng (Fix 3)
+  useEffect(() => {
+    if (!socket || !id || !selectedOrder) return
+
+    const currentOrderId = selectedOrder.id
+
+    const refreshLogsIfMatch = (data: { orderId: number }) => {
+      if (data.orderId === currentOrderId) {
+        dispatch(fetchOrderById(id))
+        dispatch(fetchOrderLogs(id))
+      }
+    }
+
+    socket.on(SOCKET_EVENTS.ORDER_STATUS_UPDATED, (data: OrderStatusUpdatedPayload) => refreshLogsIfMatch(data))
+    socket.on(SOCKET_EVENTS.ORDER_PAYMENT_UPDATED, (data: OrderPaymentUpdatedPayload) => refreshLogsIfMatch(data))
+    socket.on(SOCKET_EVENTS.ORDER_MARK_PAID, (data: OrderMarkPaidPayload) => refreshLogsIfMatch(data))
+    socket.on(SOCKET_EVENTS.ORDER_CANCELLED, (data: OrderCancelledPayload) => refreshLogsIfMatch(data))
+
+    return () => {
+      socket.off(SOCKET_EVENTS.ORDER_STATUS_UPDATED)
+      socket.off(SOCKET_EVENTS.ORDER_PAYMENT_UPDATED)
+      socket.off(SOCKET_EVENTS.ORDER_MARK_PAID)
+      socket.off(SOCKET_EVENTS.ORDER_CANCELLED)
+    }
+  }, [socket, id, selectedOrder?.id, dispatch])
 
   // Handlers
   const handleStatusChange = (e: SelectChangeEvent) => {
@@ -130,6 +165,21 @@ const OrderDetail = ({ id }: OrderDetailProps) => {
       dispatch(fetchOrderLogs(selectedOrder.id))
     }
   }
+
+  // Helper: nhãn người thực hiện — phân biệt Admin / Staff / Khách hàng / Hệ thống (Fix 2)
+  const getPerformerLabel = useCallback((log: LogEntry): string => {
+    if (log.performedByRole === 'user') return 'Khách hàng'
+
+    if (log.performedByRole === 'admin') {
+      const roleName = log.performedBy?.role?.toLowerCase()
+
+      if (roleName === 'staff') return 'Nhân viên'
+
+      return 'Quản trị viên'
+    }
+
+    return 'Hệ thống'
+  }, [])
 
   // Helper: nhãn tiếng Việt cho action
   const ACTION_LABELS: Record<string, string> = {
@@ -349,14 +399,7 @@ const OrderDetail = ({ id }: OrderDetailProps) => {
 
                     {/* Người thực hiện */}
                     <Typography variant='caption' color='text.secondary' display='block' sx={{ mb: 0.5 }}>
-                      Bởi:{' '}
-                      <strong>
-                        {log.performedByRole === 'admin'
-                          ? 'Quản trị viên'
-                          : log.performedByRole === 'user'
-                            ? 'Khách hàng'
-                            : 'Hệ thống'}
-                      </strong>
+                      Bởi: <strong>{getPerformerLabel(log)}</strong>
                       {log.performedBy ? ` — ${log.performedBy.displayName}` : ''}
                     </Typography>
 
