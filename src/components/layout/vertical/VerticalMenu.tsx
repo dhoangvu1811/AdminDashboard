@@ -99,6 +99,12 @@ const VerticalMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectSc
             </MenuItem>
           )}
 
+          {check(PERMISSIONS.MANAGE_CONTACTS) && (
+            <MenuItem href='/contacts' icon={<i className='ri-customer-service-2-line' />}>
+              Contact Management
+            </MenuItem>
+          )}
+
           {check(PERMISSIONS.MANAGE_VOUCHERS) && (
             <MenuItem href='/vouchers' icon={<i className='ri-ticket-2-line' />}>
               Voucher Management
