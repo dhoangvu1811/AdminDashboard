@@ -10,6 +10,7 @@ import permissionReducer from './slices/permissionSlice'
 import orderReducer from './slices/orderSlice'
 import voucherReducer from './slices/voucherSlice'
 import notificationReducer from './slices/notificationSlice'
+import contactReducer from './slices/contactSlice'
 
 // import contactReducer from './slices/contactSlice'
 
@@ -23,9 +24,8 @@ export const store = configureStore({
     permissions: permissionReducer,
     orders: orderReducer,
     vouchers: voucherReducer,
-    notifications: notificationReducer
-
-    // contacts: contactReducer,
+    notifications: notificationReducer,
+    contacts: contactReducer
   },
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware({
