@@ -79,7 +79,8 @@ export const API_ENDPOINTS = {
 
   // Contact/Social
   CONTACTS: {
-    ALL: '/contacts'
+    ALL: '/contacts',
+    REPLY: (id: number | string) => `/contacts/${id}/reply`
   },
 
   // Role Management
