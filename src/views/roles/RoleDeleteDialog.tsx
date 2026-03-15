@@ -20,7 +20,7 @@ const RoleDeleteDialog = ({ open, onClose, onConfirm, role }: RoleDeleteDialogPr
       <DialogTitle>Xóa vai trò</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          Bạn có chắc chắn muốn xóa vai trò "{role?.name}"? Thao tác này không thể hoàn tác.
+          Bạn có chắc chắn muốn xóa vai trò &quot;{role?.name}&quot;? Thao tác này không thể hoàn tác.
         </DialogContentText>
       </DialogContent>
       <DialogActions>

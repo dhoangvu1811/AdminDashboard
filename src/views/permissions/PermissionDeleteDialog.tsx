@@ -20,8 +20,8 @@ const PermissionDeleteDialog = ({ open, onClose, onConfirm, permission }: Permis
       <DialogTitle>Xóa quyền hạn</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          Bạn có chắc chắn muốn xóa quyền hạn "{permission?.displayName || permission?.name}"? Thao tác này không thể
-          hoàn tác.
+          Bạn có chắc chắn muốn xóa quyền hạn &quot;{permission?.displayName || permission?.name}&quot;? Thao tác này
+          không thể hoàn tác.
         </DialogContentText>
       </DialogContent>
       <DialogActions>

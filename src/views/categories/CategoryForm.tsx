@@ -35,9 +35,9 @@ const CategoryForm = () => {
 
   const isEditMode = Boolean(id)
 
-  const { isLoading, selectedCategory, error } = useAppSelector(state => state.categories)
+  const { isLoading, selectedCategory, error: _error } = useAppSelector(state => state.categories)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [imagesToUpload, setImagesToUpload] = useState<File[]>([])
+  const [_imagesToUpload, setImagesToUpload] = useState<File[]>([])
   const [existingImages, setExistingImages] = useState<string[]>([])
 
   const {
@@ -174,28 +174,22 @@ const CategoryForm = () => {
                   <Controller
                     name='description'
                     control={control}
-                    render={({ field }) => (
-                      <Controller
-                        name='description'
-                        control={control}
-                        render={({ field }) => (
-                          <Box>
-                            <Typography variant='body2' sx={{ mb: 1 }}>
-                              Mô tả
-                            </Typography>
-                            <RichTextEditor
-                              value={field.value || ''}
-                              onChange={field.onChange}
-                              placeholder='Nhập mô tả danh mục (tùy chọn)'
-                            />
-                            {errors.description && (
-                              <Typography variant='caption' color='error' sx={{ mt: 0.5, display: 'block' }}>
-                                {errors.description.message}
-                              </Typography>
-                            )}
-                          </Box>
+                    render={({ field: _field }) => (
+                      <Box>
+                        <Typography variant='body2' sx={{ mb: 1 }}>
+                          Mô tả
+                        </Typography>
+                        <RichTextEditor
+                          value={_field.value || ''}
+                          onChange={_field.onChange}
+                          placeholder='Nhập mô tả danh mục (tùy chọn)'
+                        />
+                        {errors.description && (
+                          <Typography variant='caption' color='error' sx={{ mt: 0.5, display: 'block' }}>
+                            {errors.description.message}
+                          </Typography>
                         )}
-                      />
+                      </Box>
                     )}
                   />
                 </Grid>

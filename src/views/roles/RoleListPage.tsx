@@ -21,10 +21,7 @@ import TableHead from '@mui/material/TableHead'
 import TableRow from '@mui/material/TableRow'
 import CircularProgress from '@mui/material/CircularProgress'
 import Tooltip from '@mui/material/Tooltip'
-import Chip from '@mui/material/Chip'
 import TablePagination from '@mui/material/TablePagination'
-
-import { useDebounce } from '@/hooks/useDebounce'
 
 // Redux
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
@@ -50,8 +47,7 @@ const RoleListPage = () => {
       dispatch(fetchRoles({ page: page + 1, limit: rowsPerPage, search }))
     }, 500)
 
-    
-return () => clearTimeout(timer)
+    return () => clearTimeout(timer)
   }, [dispatch, page, rowsPerPage, search])
 
   const handlePageChange = (event: unknown, newPage: number) => {

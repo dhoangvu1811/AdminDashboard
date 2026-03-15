@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState } from 'react'
 
 import { useRouter, useParams } from 'next/navigation'
 
@@ -22,7 +22,7 @@ import Backdrop from '@mui/material/Backdrop'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import Checkbox from '@mui/material/Checkbox'
 import Typography from '@mui/material/Typography'
-import FormGroup from '@mui/material/FormGroup'
+import Paper from '@mui/material/Paper'
 
 // Third-party
 import { roleSchema, type RoleSchema } from '@/utils/rules'
@@ -262,8 +262,5 @@ const RoleForm = () => {
     </Card>
   )
 }
-
-// Helper to fix the missing Paper import since I used it above
-import Paper from '@mui/material/Paper'
 
 export default RoleForm

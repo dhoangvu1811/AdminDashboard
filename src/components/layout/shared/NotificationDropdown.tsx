@@ -79,7 +79,7 @@ const NotificationDropdown = () => {
 
   // Hooks
   const dispatch = useAppDispatch()
-  const { notifications, unreadCount, isLoading, pagination } = useAppSelector(state => state.notifications)
+  const { notifications, unreadCount, isLoading } = useAppSelector(state => state.notifications)
 
   // Fetch notifications khi mở dropdown lần đầu
   // Fetch mỗi khi mở dropdown để dữ liệu luôn mới nhất

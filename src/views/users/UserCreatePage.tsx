@@ -23,7 +23,7 @@ import Divider from '@mui/material/Divider'
 import Typography from '@mui/material/Typography'
 
 // Third Party Imports
-import { useForm, type SubmitHandler } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 
 // Redux Imports
