@@ -53,7 +53,7 @@ export interface LoginPayload {
 
 // Login Response from API
 export interface LoginResponse {
-  success: boolean
+  code: number
   message: string
   data: {
     user: User
@@ -77,6 +77,7 @@ export interface AuthState {
 
 // Logout Response
 export interface LogoutResponse {
-  success: boolean
+  code: number
   message: string
+  data: null
 }
