@@ -17,7 +17,7 @@ export interface UserFilters extends SearchParams {
 // User List Response
 // User List Response
 export interface UserListResponse {
-  success: boolean
+  code: number
   message: string
   data: {
     users: User[]
@@ -27,7 +27,7 @@ export interface UserListResponse {
 
 // User Detail Response
 export interface UserDetailResponse {
-  success: boolean
+  code: number
   message: string
   data: User
 }
@@ -69,7 +69,7 @@ export interface ChangeRolePayload {
 
 // User Overview Response
 export interface UserOverviewResponse {
-  success: boolean
+  code: number
   message: string
   data: {
     totalUsers: number

@@ -6,10 +6,12 @@ export interface ApiResponse<T = unknown> {
 }
 
 export interface PaginatedResponse<T> {
-  success: boolean
+  code: number
   message: string
-  data: T[]
-  pagination: PaginationInfo
+  data: {
+    items: T[]
+    pagination: PaginationInfo
+  }
 }
 
 export interface PaginationInfo {
@@ -22,9 +24,11 @@ export interface PaginationInfo {
 }
 
 export interface ApiError {
-  success: false
+  code: number
   message: string
+  data?: null
   errors?: Record<string, string[]>
+  stack?: string
 }
 
 // Query Params
