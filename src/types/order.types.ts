@@ -22,7 +22,7 @@ export interface ShippingAddress {
   name: string
   phone: string
   address: string
-  city: string
+  district?: string
   province: string
   postalCode?: string
   isDefault?: boolean
