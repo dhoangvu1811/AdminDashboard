@@ -492,7 +492,13 @@ const OrderDetail = ({ id }: OrderDetailProps) => {
               </Box>
               <Typography variant='body2'>
                 {selectedOrder.shippingAddress
-                  ? `${selectedOrder.shippingAddress.address}, ${selectedOrder.shippingAddress.city}, ${selectedOrder.shippingAddress.province}`
+                  ? [
+                      selectedOrder.shippingAddress.address,
+                      selectedOrder.shippingAddress.district,
+                      selectedOrder.shippingAddress.province
+                    ]
+                      .filter(Boolean)
+                      .join(', ')
                   : 'Không có địa chỉ'}
               </Typography>
             </Box>
