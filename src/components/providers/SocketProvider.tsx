@@ -14,11 +14,10 @@ import { createContext, useContext, useEffect, useRef, useCallback, useState, ty
 import axios from 'axios'
 import { io, type Socket } from 'socket.io-client'
 import toast from 'react-hot-toast'
-import { useDispatch, useSelector } from 'react-redux'
 
-import type { RootState, AppDispatch } from '@/redux/store'
+import { useAppDispatch, useAppSelector } from '@/redux/hooks'
 import { fetchOrders } from '@/redux/slices/orderSlice'
-import { addRealtimeNotification, clearNotifications } from '@/redux/slices/notificationSlice'
+import { addRealtimeNotification, clearNotifications, fetchNotifications } from '@/redux/slices/notificationSlice'
 import { ORDER_STATUS_NAMES } from '@/constants/order'
 import {
   SOCKET_EVENTS,
@@ -72,11 +71,11 @@ export function SocketProvider({ children }: { children: ReactNode }) {
   const socketRef = useRef<Socket | null>(null)
   const retryCountRef = useRef(0)
   const maxRetries = 3
-  const dispatch = useDispatch<AppDispatch>()
+  const dispatch = useAppDispatch()
   const [newOrderCount, setNewOrderCount] = useState(0)
   const [isConnected, setIsConnected] = useState(false)
 
-  const { isAuthenticated } = useSelector((state: RootState) => state.auth)
+  const { isAuthenticated } = useAppSelector(state => state.auth)
 
   const resetNewOrderCount = useCallback(() => {
     setNewOrderCount(0)
@@ -89,9 +88,10 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     (_data: OrderNewPayload) => {
       setNewOrderCount(prev => prev + 1)
 
-      // Không hiển thị toast ở đây — toast được xử lý tập trung bởi NOTIFICATION_NEW handler
-      // Chỉ refresh danh sách đơn hàng
+      // Fallback: đồng bộ nhanh notification khi có ORDER_NEW,
+      // tránh phụ thuộc duy nhất vào event NOTIFICATION_NEW.
       dispatch(fetchOrders({}))
+      dispatch(fetchNotifications({ page: 1, limit: 20 }))
     },
     [dispatch]
   )
@@ -119,6 +119,14 @@ export function SocketProvider({ children }: { children: ReactNode }) {
    */
   const handlePaymentUpdated = useCallback(
     (data: OrderPaymentUpdatedPayload) => {
+      // Khi user thanh toán PayPal thành công, backend gửi cả ORDER_PAYMENT_UPDATED
+      // và NOTIFICATION_NEW. Toast ở đây sẽ bị trùng với NOTIFICATION_NEW.
+      if (String(data.toPaymentStatus || '').toUpperCase() === 'PAID') {
+        dispatch(fetchOrders({}))
+
+        return
+      }
+
       toast(`Thanh toán đơn #${data.orderCode}: ${data.paymentStatusName || data.toPaymentStatus}`, {
         icon: '💳',
         duration: 4000
@@ -172,6 +180,11 @@ export function SocketProvider({ children }: { children: ReactNode }) {
           updatedAt: data.createdAt
         })
       )
+
+      // Fallback đồng bộ trạng thái đơn khi nhận notification thanh toán.
+      if (data.type === 'ORDER_PAYMENT') {
+        dispatch(fetchOrders({}))
+      }
 
       // Hiển thị toast
       toast(data.message, { icon: '🔔', duration: 4000 })
@@ -296,6 +309,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
       }
     }
   }, [
+    dispatch,
     isAuthenticated,
     handleNewOrder,
     handleOrderStatusUpdated,
