@@ -97,9 +97,9 @@ const OrderDetail = ({ id }: OrderDetailProps) => {
 
   // Lắng nghe socket events để làm mới lịch sử đơn hàng (Fix 3)
   useEffect(() => {
-    if (!socket || !id || !selectedOrder) return
+    const currentOrderId = selectedOrder?.id
 
-    const currentOrderId = selectedOrder.id
+    if (!socket || !id || !currentOrderId) return
 
     const refreshLogsIfMatch = (data: { orderId: number }) => {
       if (data.orderId === currentOrderId) {
@@ -108,16 +108,32 @@ const OrderDetail = ({ id }: OrderDetailProps) => {
       }
     }
 
-    socket.on(SOCKET_EVENTS.ORDER_STATUS_UPDATED, (data: OrderStatusUpdatedPayload) => refreshLogsIfMatch(data))
-    socket.on(SOCKET_EVENTS.ORDER_PAYMENT_UPDATED, (data: OrderPaymentUpdatedPayload) => refreshLogsIfMatch(data))
-    socket.on(SOCKET_EVENTS.ORDER_MARK_PAID, (data: OrderMarkPaidPayload) => refreshLogsIfMatch(data))
-    socket.on(SOCKET_EVENTS.ORDER_CANCELLED, (data: OrderCancelledPayload) => refreshLogsIfMatch(data))
+    const handleOrderStatusUpdated = (data: OrderStatusUpdatedPayload) => {
+      refreshLogsIfMatch(data)
+    }
+
+    const handleOrderPaymentUpdated = (data: OrderPaymentUpdatedPayload) => {
+      refreshLogsIfMatch(data)
+    }
+
+    const handleOrderMarkPaid = (data: OrderMarkPaidPayload) => {
+      refreshLogsIfMatch(data)
+    }
+
+    const handleOrderCancelled = (data: OrderCancelledPayload) => {
+      refreshLogsIfMatch(data)
+    }
+
+    socket.on(SOCKET_EVENTS.ORDER_STATUS_UPDATED, handleOrderStatusUpdated)
+    socket.on(SOCKET_EVENTS.ORDER_PAYMENT_UPDATED, handleOrderPaymentUpdated)
+    socket.on(SOCKET_EVENTS.ORDER_MARK_PAID, handleOrderMarkPaid)
+    socket.on(SOCKET_EVENTS.ORDER_CANCELLED, handleOrderCancelled)
 
     return () => {
-      socket.off(SOCKET_EVENTS.ORDER_STATUS_UPDATED)
-      socket.off(SOCKET_EVENTS.ORDER_PAYMENT_UPDATED)
-      socket.off(SOCKET_EVENTS.ORDER_MARK_PAID)
-      socket.off(SOCKET_EVENTS.ORDER_CANCELLED)
+      socket.off(SOCKET_EVENTS.ORDER_STATUS_UPDATED, handleOrderStatusUpdated)
+      socket.off(SOCKET_EVENTS.ORDER_PAYMENT_UPDATED, handleOrderPaymentUpdated)
+      socket.off(SOCKET_EVENTS.ORDER_MARK_PAID, handleOrderMarkPaid)
+      socket.off(SOCKET_EVENTS.ORDER_CANCELLED, handleOrderCancelled)
     }
   }, [socket, id, selectedOrder?.id, dispatch])
 
