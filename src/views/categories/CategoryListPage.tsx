@@ -24,6 +24,7 @@ import TableContainer from '@mui/material/TableContainer'
 import TableHead from '@mui/material/TableHead'
 import TableRow from '@mui/material/TableRow'
 import CircularProgress from '@mui/material/CircularProgress'
+import LinearProgress from '@mui/material/LinearProgress'
 import Tooltip from '@mui/material/Tooltip'
 import TablePagination from '@mui/material/TablePagination'
 
@@ -198,6 +199,7 @@ const CategoryListPage = () => {
         </Box>
 
         {/* Table */}
+        {isLoading && categories.length > 0 && <LinearProgress />}
         <TableContainer>
           <Table>
             <TableHead>
@@ -216,7 +218,7 @@ const CategoryListPage = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {isLoading ? (
+              {isLoading && categories.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} align='center' sx={{ py: 10 }}>
                     <CircularProgress />

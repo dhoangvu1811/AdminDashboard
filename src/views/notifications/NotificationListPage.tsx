@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 
 // MUI Imports
 import Box from '@mui/material/Box'
@@ -22,6 +22,7 @@ import TableContainer from '@mui/material/TableContainer'
 import TableHead from '@mui/material/TableHead'
 import TableRow from '@mui/material/TableRow'
 import CircularProgress from '@mui/material/CircularProgress'
+import LinearProgress from '@mui/material/LinearProgress'
 import Tooltip from '@mui/material/Tooltip'
 import Dialog from '@mui/material/Dialog'
 import DialogActions from '@mui/material/DialogActions'
@@ -116,23 +117,61 @@ const NotificationListPage = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<Notification | null>(null)
   const [deleteAllReadDialogOpen, setDeleteAllReadDialogOpen] = useState(false)
+  const isClientFilterMode = readFilter !== 'all'
 
-  // Fetch notifications
-  const loadNotifications = useCallback(() => {
+  // Fetch notifications với phân trang server
+  const loadAllNotifications = useCallback(() => {
     dispatch(fetchNotifications({ page: page + 1, limit: rowsPerPage }))
   }, [dispatch, page, rowsPerPage])
 
+  // Khi filter theo trạng thái đọc/chưa đọc, tải đầy đủ dữ liệu rồi phân trang ở client
+  const loadFilteredNotifications = useCallback(() => {
+    const fullLimit = pagination.totalItems > 0 ? pagination.totalItems : rowsPerPage
+
+    dispatch(fetchNotifications({ page: 1, limit: fullLimit }))
+  }, [dispatch, pagination.totalItems, rowsPerPage])
+
+  const loadNotifications = useCallback(() => {
+    if (isClientFilterMode) {
+      loadFilteredNotifications()
+
+      return
+    }
+
+    loadAllNotifications()
+  }, [isClientFilterMode, loadFilteredNotifications, loadAllNotifications])
+
   useEffect(() => {
-    loadNotifications()
-  }, [loadNotifications])
+    if (isClientFilterMode) return
+    loadAllNotifications()
+  }, [isClientFilterMode, loadAllNotifications])
+
+  useEffect(() => {
+    if (!isClientFilterMode) return
+    loadFilteredNotifications()
+  }, [isClientFilterMode, loadFilteredNotifications])
 
   // Filtered notifications (client-side filter by read status)
-  const filteredNotifications = notifications.filter(n => {
-    if (readFilter === 'read') return n.isRead
-    if (readFilter === 'unread') return !n.isRead
+  const filteredNotifications = useMemo(() => {
+    return notifications.filter(n => {
+      if (readFilter === 'read') return n.isRead
+      if (readFilter === 'unread') return !n.isRead
 
-    return true
-  })
+      return true
+    })
+  }, [notifications, readFilter])
+
+  const displayedNotifications = useMemo(() => {
+    if (!isClientFilterMode) return filteredNotifications
+
+    const start = page * rowsPerPage
+
+    return filteredNotifications.slice(start, start + rowsPerPage)
+  }, [filteredNotifications, isClientFilterMode, page, rowsPerPage])
+
+  const totalCountForView = useMemo(() => {
+    return isClientFilterMode ? filteredNotifications.length : pagination.totalItems
+  }, [isClientFilterMode, filteredNotifications.length, pagination.totalItems])
 
   // Đánh dấu đã đọc
   const handleMarkAsRead = (notification: Notification) => {
@@ -157,7 +196,7 @@ const NotificationListPage = () => {
     if (deleteTarget) {
       dispatch(deleteNotification(deleteTarget.id)).then(() => {
         // Reload nếu danh sách trống sau khi xoá
-        if (notifications.length <= 1 && page > 0) {
+        if (displayedNotifications.length <= 1 && page > 0) {
           setPage(prev => prev - 1)
         }
       })
@@ -191,14 +230,19 @@ const NotificationListPage = () => {
     setPage(0)
   }
 
+  const handleReadFilterChange = (value: 'all' | 'read' | 'unread') => {
+    setReadFilter(value)
+    setPage(0)
+  }
+
   // Đếm đã đọc
-  const readCount = notifications.filter(n => n.isRead).length
+  const readCount = useMemo(() => notifications.filter(n => n.isRead).length, [notifications])
 
   return (
     <Card>
       <CardHeader
         title='Lịch sử thông báo'
-        subheader={`${pagination.totalItems} thông báo · ${unreadCount} chưa đọc`}
+        subheader={`${totalCountForView} thông báo · ${unreadCount} chưa đọc`}
         action={
           <Box className='flex items-center gap-2'>
             {/* Filter */}
@@ -207,7 +251,7 @@ const NotificationListPage = () => {
               <Select
                 value={readFilter}
                 label='Trạng thái'
-                onChange={e => setReadFilter(e.target.value as 'all' | 'read' | 'unread')}
+                onChange={e => handleReadFilterChange(e.target.value as 'all' | 'read' | 'unread')}
               >
                 <MenuItem value='all'>Tất cả</MenuItem>
                 <MenuItem value='unread'>Chưa đọc</MenuItem>
@@ -257,6 +301,7 @@ const NotificationListPage = () => {
       />
 
       {/* Table */}
+      {isLoading && notifications.length > 0 && <LinearProgress />}
       <TableContainer>
         <Table>
           <TableHead>
@@ -272,13 +317,13 @@ const NotificationListPage = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {isLoading ? (
+            {isLoading && notifications.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} align='center' sx={{ py: 8 }}>
                   <CircularProgress size={32} />
                 </TableCell>
               </TableRow>
-            ) : filteredNotifications.length === 0 ? (
+            ) : displayedNotifications.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} align='center' sx={{ py: 8 }}>
                   <Box className='flex flex-col items-center'>
@@ -290,7 +335,7 @@ const NotificationListPage = () => {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredNotifications.map(notification => (
+              displayedNotifications.map(notification => (
                 <TableRow
                   key={notification.id}
                   hover
@@ -379,7 +424,7 @@ const NotificationListPage = () => {
       {/* Pagination */}
       <TablePagination
         component='div'
-        count={pagination.totalItems}
+        count={totalCountForView}
         page={page}
         rowsPerPage={rowsPerPage}
         onPageChange={handleChangePage}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 
 import { useRouter } from 'next/navigation'
 
@@ -20,11 +20,13 @@ import TableContainer from '@mui/material/TableContainer'
 import TableHead from '@mui/material/TableHead'
 import TableRow from '@mui/material/TableRow'
 import CircularProgress from '@mui/material/CircularProgress'
+import LinearProgress from '@mui/material/LinearProgress'
 import TablePagination from '@mui/material/TablePagination'
 
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
 import { fetchPermissions, deletePermission } from '@/redux/slices/permissionSlice'
 import type { Permission } from '@/types/role.types'
+import { useDebounce } from '@/hooks'
 
 import PermissionDeleteDialog from './PermissionDeleteDialog'
 
@@ -34,19 +36,24 @@ const PermissionListPage = () => {
 
   const { permissions, pagination, isLoading } = useAppSelector(state => state.permissions)
   const [search, setSearch] = useState('')
+  const debouncedSearch = useDebounce(search, 500)
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
   const [permissionToDelete, setPermissionToDelete] = useState<Permission | null>(null)
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      dispatch(fetchPermissions({ page: page + 1, limit: rowsPerPage, search }))
-    }, 500)
+  const loadPermissions = useCallback(() => {
+    dispatch(fetchPermissions({ page: page + 1, limit: rowsPerPage, search: debouncedSearch || undefined }))
+  }, [dispatch, page, rowsPerPage, debouncedSearch])
 
-    return () => clearTimeout(timer)
+  const handleRefresh = useCallback(() => {
+    dispatch(fetchPermissions({ page: page + 1, limit: rowsPerPage, search: search.trim() || undefined }))
   }, [dispatch, page, rowsPerPage, search])
 
-  const handlePageChange = (event: unknown, newPage: number) => {
+  useEffect(() => {
+    loadPermissions()
+  }, [loadPermissions])
+
+  const handlePageChange = (_event: unknown, newPage: number) => {
     setPage(newPage)
   }
 
@@ -78,11 +85,7 @@ const PermissionListPage = () => {
         title='Quản lý Quyền hạn (Permissions)'
         action={
           <Box sx={{ display: 'flex', gap: 2 }}>
-            <Button
-              variant='outlined'
-              startIcon={<i className='ri-refresh-line' />}
-              onClick={() => dispatch(fetchPermissions({ page: page + 1, limit: rowsPerPage, search }))}
-            >
+            <Button variant='outlined' startIcon={<i className='ri-refresh-line' />} onClick={handleRefresh}>
               Làm mới
             </Button>
             <Button
@@ -110,6 +113,7 @@ const PermissionListPage = () => {
           }}
         />
       </Box>
+      {isLoading && permissions.length > 0 && <LinearProgress />}
       <TableContainer>
         <Table>
           <TableHead>
@@ -120,10 +124,16 @@ const PermissionListPage = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {isLoading ? (
+            {isLoading && permissions.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={3} align='center'>
                   <CircularProgress />
+                </TableCell>
+              </TableRow>
+            ) : permissions.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={3} align='center' sx={{ py: 8 }}>
+                  <Typography color='text.secondary'>Không tìm thấy dữ liệu</Typography>
                 </TableCell>
               </TableRow>
             ) : (
