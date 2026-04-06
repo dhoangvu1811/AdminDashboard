@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 
 import { useRouter } from 'next/navigation'
 
@@ -20,6 +20,7 @@ import TableContainer from '@mui/material/TableContainer'
 import TableHead from '@mui/material/TableHead'
 import TableRow from '@mui/material/TableRow'
 import CircularProgress from '@mui/material/CircularProgress'
+import LinearProgress from '@mui/material/LinearProgress'
 import Tooltip from '@mui/material/Tooltip'
 import TablePagination from '@mui/material/TablePagination'
 
@@ -27,6 +28,7 @@ import TablePagination from '@mui/material/TablePagination'
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
 import { fetchRoles, deleteRole } from '@/redux/slices/roleSlice'
 import type { Role } from '@/types/role.types'
+import { useDebounce } from '@/hooks'
 
 import RoleDeleteDialog from './RoleDeleteDialog'
 
@@ -37,20 +39,24 @@ const RoleListPage = () => {
   const { roles, pagination, isLoading } = useAppSelector(state => state.roles)
 
   const [search, setSearch] = useState('')
+  const debouncedSearch = useDebounce(search, 500)
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
   const [roleToDelete, setRoleToDelete] = useState<Role | null>(null)
 
-  // Debounce search optional, but for now strict effect
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      dispatch(fetchRoles({ page: page + 1, limit: rowsPerPage, search }))
-    }, 500)
+  const loadRoles = useCallback(() => {
+    dispatch(fetchRoles({ page: page + 1, limit: rowsPerPage, search: debouncedSearch || undefined }))
+  }, [dispatch, page, rowsPerPage, debouncedSearch])
 
-    return () => clearTimeout(timer)
+  const handleRefresh = useCallback(() => {
+    dispatch(fetchRoles({ page: page + 1, limit: rowsPerPage, search: search.trim() || undefined }))
   }, [dispatch, page, rowsPerPage, search])
 
-  const handlePageChange = (event: unknown, newPage: number) => {
+  useEffect(() => {
+    loadRoles()
+  }, [loadRoles])
+
+  const handlePageChange = (_event: unknown, newPage: number) => {
     setPage(newPage)
   }
 
@@ -86,11 +92,7 @@ const RoleListPage = () => {
           title='Quản lý vai trò (Roles)'
           action={
             <Box sx={{ display: 'flex', gap: 2 }}>
-              <Button
-                variant='outlined'
-                startIcon={<i className='ri-refresh-line' />}
-                onClick={() => dispatch(fetchRoles({ page: page + 1, limit: rowsPerPage, search }))}
-              >
+              <Button variant='outlined' startIcon={<i className='ri-refresh-line' />} onClick={handleRefresh}>
                 Làm mới
               </Button>
               <Button
@@ -121,6 +123,7 @@ const RoleListPage = () => {
           />
         </Box>
 
+        {isLoading && roles.length > 0 && <LinearProgress />}
         <TableContainer>
           <Table>
             <TableHead>
@@ -132,7 +135,7 @@ const RoleListPage = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {isLoading ? (
+              {isLoading && roles.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4} align='center' sx={{ py: 10 }}>
                     <CircularProgress />

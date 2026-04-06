@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 
 import { useRouter } from 'next/navigation'
 
@@ -29,6 +29,7 @@ import TableContainer from '@mui/material/TableContainer'
 import TableHead from '@mui/material/TableHead'
 import TableRow from '@mui/material/TableRow'
 import CircularProgress from '@mui/material/CircularProgress'
+import LinearProgress from '@mui/material/LinearProgress'
 import Tooltip from '@mui/material/Tooltip'
 
 // Redux Imports
@@ -49,7 +50,7 @@ const UserListPage = () => {
   const router = useRouter()
   const dispatch = useAppDispatch()
   const { users, pagination, isLoading, error } = useAppSelector(state => state.users)
-  const { roles } = useAppSelector(state => state.roles)
+  const { roles, isLoading: isRolesLoading } = useAppSelector(state => state.roles)
 
   // Filter states
   const [search, setSearch] = useState('')
@@ -73,6 +74,7 @@ const UserListPage = () => {
   // Action menu
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [menuUser, setMenuUser] = useState<User | null>(null)
+  const rolesFetchAttemptedRef = useRef(false)
 
   // Fetch users
   const loadUsers = useCallback(() => {
@@ -89,8 +91,22 @@ const UserListPage = () => {
 
   useEffect(() => {
     loadUsers()
-    dispatch(fetchRoles({ limit: 100 }))
-  }, [loadUsers, dispatch])
+  }, [loadUsers])
+
+  useEffect(() => {
+    if (roles.length > 0 || isRolesLoading || rolesFetchAttemptedRef.current) return
+
+    rolesFetchAttemptedRef.current = true
+    void dispatch(fetchRoles({ limit: 100 }))
+  }, [dispatch, roles.length, isRolesLoading])
+
+  const handleRefresh = () => {
+    loadUsers()
+
+    if (roles.length === 0 && !isRolesLoading) {
+      void dispatch(fetchRoles({ limit: 100 }))
+    }
+  }
 
   // Handlers
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -242,7 +258,7 @@ const UserListPage = () => {
               <Button
                 variant='outlined'
                 color='secondary'
-                onClick={loadUsers}
+                onClick={handleRefresh}
                 startIcon={<i className='ri-refresh-line' />}
               >
                 Làm mới
@@ -309,6 +325,7 @@ const UserListPage = () => {
         </Box>
 
         {/* Table */}
+        {isLoading && users.length > 0 && <LinearProgress />}
         <TableContainer>
           <Table>
             <TableHead>
@@ -329,7 +346,7 @@ const UserListPage = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {isLoading ? (
+              {isLoading && users.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} align='center' sx={{ py: 10 }}>
                     <CircularProgress />
