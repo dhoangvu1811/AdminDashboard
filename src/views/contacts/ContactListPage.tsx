@@ -8,6 +8,7 @@ import CardHeader from '@mui/material/CardHeader'
 import Button from '@mui/material/Button'
 import Chip from '@mui/material/Chip'
 import CircularProgress from '@mui/material/CircularProgress'
+import LinearProgress from '@mui/material/LinearProgress'
 import Dialog from '@mui/material/Dialog'
 import DialogActions from '@mui/material/DialogActions'
 import DialogContent from '@mui/material/DialogContent'
@@ -205,6 +206,7 @@ const ContactListPage = () => {
         }
       />
 
+      {isLoading && contacts.length > 0 && <LinearProgress />}
       <TableContainer>
         <Table>
           <TableHead>
@@ -221,7 +223,7 @@ const ContactListPage = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {isLoading ? (
+            {isLoading && contacts.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} align='center' sx={{ py: 8 }}>
                   <CircularProgress size={32} />

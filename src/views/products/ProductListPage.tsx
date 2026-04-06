@@ -29,6 +29,7 @@ import TableContainer from '@mui/material/TableContainer'
 import TableHead from '@mui/material/TableHead'
 import TableRow from '@mui/material/TableRow'
 import CircularProgress from '@mui/material/CircularProgress'
+import LinearProgress from '@mui/material/LinearProgress'
 import Tooltip from '@mui/material/Tooltip'
 
 // Redux Imports
@@ -261,6 +262,7 @@ const ProductListPage = () => {
         </Box>
 
         {/* Table */}
+        {isLoading && products.length > 0 && <LinearProgress />}
         <TableContainer>
           <Table>
             <TableHead>
@@ -283,7 +285,7 @@ const ProductListPage = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {isLoading ? (
+              {isLoading && products.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={9} align='center' sx={{ py: 10 }}>
                     <CircularProgress />

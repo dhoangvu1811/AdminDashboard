@@ -352,6 +352,7 @@ const VoucherListPage = () => {
         </Box>
 
         {/* Table */}
+        {isLoading && vouchers.length > 0 && <LinearProgress />}
         <TableContainer>
           <Table>
             <TableHead>
@@ -374,7 +375,7 @@ const VoucherListPage = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {isLoading ? (
+              {isLoading && vouchers.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={9} align='center' sx={{ py: 10 }}>
                     <CircularProgress />
