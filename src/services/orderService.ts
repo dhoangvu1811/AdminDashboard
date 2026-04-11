@@ -1,6 +1,14 @@
 import axiosInstance from '@/libs/api/axiosInstance'
 import { API_ENDPOINTS } from '@/libs/api/endpoints'
-import type { Order, OrderListResponse, OrderLog, OrderFilters, OrderStatus, PaymentStatus } from '@/types/order.types'
+import type {
+  Order,
+  OrderListResponse,
+  OrderLog,
+  OrderFilters,
+  OrderStatus,
+  PaymentStatus,
+  OrderDashboardSummary
+} from '@/types/order.types'
 import type { ApiResponse } from '@/types/api.types'
 
 export const orderService = {
@@ -12,8 +20,16 @@ export const orderService = {
       params
     })
 
-    
-return response.data.data
+    return response.data.data
+  },
+
+  /**
+   * Get aggregated dashboard summary for orders
+   */
+  getDashboardSummary: async () => {
+    const response = await axiosInstance.get<ApiResponse<OrderDashboardSummary>>(API_ENDPOINTS.ORDERS.DASHBOARD_SUMMARY)
+
+    return response.data.data
   },
 
   /**
@@ -22,8 +38,7 @@ return response.data.data
   getById: async (id: number | string) => {
     const response = await axiosInstance.get<ApiResponse<Order>>(API_ENDPOINTS.ORDERS.DETAILS(id))
 
-    
-return response.data.data
+    return response.data.data
   },
 
   /**
@@ -34,8 +49,7 @@ return response.data.data
       status
     })
 
-    
-return response.data.data
+    return response.data.data
   },
 
   /**
@@ -46,8 +60,7 @@ return response.data.data
       status
     })
 
-    
-return response.data.data
+    return response.data.data
   },
 
   /**
@@ -56,8 +69,7 @@ return response.data.data
   markPaid: async (id: number | string) => {
     const response = await axiosInstance.post<ApiResponse<Order>>(API_ENDPOINTS.ORDERS.MARK_PAID(id))
 
-    
-return response.data.data
+    return response.data.data
   },
 
   /**
@@ -66,8 +78,7 @@ return response.data.data
   cancel: async (id: number | string) => {
     const response = await axiosInstance.post<ApiResponse<Order>>(API_ENDPOINTS.ORDERS.CANCEL(id))
 
-    
-return response.data.data
+    return response.data.data
   },
 
   /**
@@ -83,7 +94,6 @@ return response.data.data
       }>
     >(API_ENDPOINTS.ORDERS.LOGS(id))
 
-    
-return response.data.data
+    return response.data.data
   }
 }

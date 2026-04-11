@@ -13,6 +13,7 @@ export const API_ENDPOINTS = {
   USERS: {
     ALL: '/users/all',
     OVERVIEW: '/users/overview',
+    STATS: '/users/stats',
     ME: '/users/me',
     UPDATE_PROFILE: '/users/me',
     DETAILS: (id: number | string) => `/users/details/${id}`,
@@ -57,6 +58,7 @@ export const API_ENDPOINTS = {
   // Order Management
   ORDERS: {
     ALL: '/orders/all',
+    DASHBOARD_SUMMARY: '/orders/dashboard-summary',
     DETAILS: (id: number | string) => `/orders/admin/details/${id}`,
     UPDATE_STATUS: (id: number | string) => `/orders/admin/update/${id}`,
     UPDATE_PAYMENT: (id: number | string) => `/orders/admin/update-payment/${id}`,

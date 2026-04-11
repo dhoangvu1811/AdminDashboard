@@ -39,7 +39,7 @@ export const userService = {
    * Get user overview statistics
    */
   getOverview: async (): Promise<UserOverviewResponse> => {
-    const response = await axiosInstance.get<UserOverviewResponse>(API_ENDPOINTS.USERS.OVERVIEW)
+    const response = await axiosInstance.get<UserOverviewResponse>(API_ENDPOINTS.USERS.STATS)
 
     return response.data
   },
