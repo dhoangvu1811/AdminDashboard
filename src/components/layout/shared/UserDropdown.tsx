@@ -131,10 +131,10 @@ const UserDropdown = () => {
       <Popper
         open={open}
         transition
-        disablePortal
         placement='bottom-end'
         anchorEl={anchorRef.current}
-        className='min-is-[240px] !mbs-4 z-[1]'
+        className='min-is-[240px] !mbs-4'
+        sx={{ zIndex: theme => theme.zIndex.modal + 2 }}
       >
         {({ TransitionProps, placement }) => (
           <Fade
