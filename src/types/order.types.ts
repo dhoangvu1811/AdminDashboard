@@ -134,3 +134,38 @@ export interface OrderFilters {
   startDate?: string
   endDate?: string
 }
+
+export interface DashboardRevenueDay {
+  key: string
+  value: number
+}
+
+export interface DashboardTopProduct {
+  id: number
+  name: string
+  price: number
+  stock: number
+  selled: number
+}
+
+export interface OrderDashboardSummary {
+  users: {
+    totalUsers: number
+    activeUsers: number
+    inactiveUsers: number
+    newUsersToday: number
+    newUsersThisMonth: number
+  }
+  products: {
+    totalProducts: number
+    topSellingProducts: DashboardTopProduct[]
+  }
+  totalOrders: number
+  recentOrders: Order[]
+  statusCounts: Record<OrderStatus, number>
+  revenue: {
+    today: number
+    month: number
+    lastSevenDays: DashboardRevenueDay[]
+  }
+}
