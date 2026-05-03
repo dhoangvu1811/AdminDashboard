@@ -77,12 +77,12 @@ export const forgotPasswordSchema = z.object({
 export type LoginSchema = z.infer<typeof loginSchema>
 
 export const productSchema = z.object({
-  name: z.string().min(1, 'Tên sản phẩm là bắt buộc'),
+  name: z.string().min(1, 'Tên sản phẩm là bắt buộc').max(500, 'Tên sản phẩm không được vượt quá 500 ký tự'),
   categoryId: z.coerce.number().min(1, 'Danh mục là bắt buộc'),
   price: z.coerce.number().min(1000, 'Giá phải lớn hơn 1.000 VNĐ').max(1000000000, 'Giá quá lớn'),
   stock: z.coerce.number().min(0, 'Số lượng không được âm').int('Số lượng phải là số nguyên'),
   rating: z.coerce.number().min(0).max(5).default(0),
-  description: z.string().optional(),
+  description: z.string().max(50000, 'Mô tả không được vượt quá 50000 ký tự').optional(),
   discount: z.coerce.number().min(0).max(100).optional().default(0),
   status: z.enum(['active', 'inactive']).default('active'),
 
