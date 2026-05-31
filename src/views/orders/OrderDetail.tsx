@@ -42,6 +42,7 @@ import DialogTitle from '@mui/material/DialogTitle'
 import DialogContent from '@mui/material/DialogContent'
 import DialogActions from '@mui/material/DialogActions'
 import DialogContentText from '@mui/material/DialogContentText'
+import TextField from '@mui/material/TextField'
 
 // Redux Imports
 import { useAppDispatch, useAppSelector } from '@/redux/hooks'
@@ -82,6 +83,7 @@ const OrderDetail = ({ id }: OrderDetailProps) => {
   const [openStatusDialog, setOpenStatusDialog] = useState(false)
   const [openMarkPaidDialog, setOpenMarkPaidDialog] = useState(false)
   const [openCancelDialog, setOpenCancelDialog] = useState(false)
+  const [cancelReason, setCancelReason] = useState('')
 
   // Fetch Data
   useEffect(() => {
@@ -176,8 +178,9 @@ const OrderDetail = ({ id }: OrderDetailProps) => {
 
   const confirmCancelOrder = async () => {
     if (selectedOrder) {
-      await dispatch(cancelOrder(selectedOrder.id))
+      await dispatch(cancelOrder({ id: selectedOrder.id, cancelReason: cancelReason.trim() || undefined }))
       setOpenCancelDialog(false)
+      setCancelReason('')
       dispatch(fetchOrderLogs(selectedOrder.id))
     }
   }
@@ -261,6 +264,13 @@ const OrderDetail = ({ id }: OrderDetailProps) => {
             }
           />
           <Divider />
+          {selectedOrder.status === 'CANCELLED' && selectedOrder.cancelReason && (
+            <Box sx={{ p: 4, pb: 2 }}>
+              <Alert severity="error" variant="filled">
+                <strong>Lý do hủy đơn hàng:</strong> "{selectedOrder.cancelReason}"
+              </Alert>
+            </Box>
+          )}
           <TableContainer>
             <Table>
               <TableHead>
@@ -636,17 +646,49 @@ const OrderDetail = ({ id }: OrderDetailProps) => {
       </Dialog>
 
       {/* Confirm Cancel Order Dialog */}
-      <Dialog open={openCancelDialog} onClose={() => setOpenCancelDialog(false)}>
+      <Dialog
+        open={openCancelDialog}
+        onClose={() => {
+          setOpenCancelDialog(false)
+          setCancelReason('')
+        }}
+        fullWidth
+        maxWidth='xs'
+      >
         <DialogTitle>Xác nhận hủy đơn hàng</DialogTitle>
         <DialogContent>
-          <DialogContentText>
+          <DialogContentText sx={{ mb: 4 }}>
             Bạn có chắc chắn muốn hủy đơn hàng <strong>#{selectedOrder.orderCode}</strong>? Hành động này{' '}
             <strong>không thể hoàn tác</strong>.
           </DialogContentText>
+          <TextField
+            autoFocus
+            fullWidth
+            multiline
+            rows={3}
+            label='Lý do hủy đơn hàng (Bắt buộc, tối thiểu 5 ký tự)'
+            variant='outlined'
+            value={cancelReason}
+            onChange={e => setCancelReason(e.target.value.slice(0, 500))}
+            helperText={`${cancelReason.length}/500 ký tự`}
+            inputProps={{ maxLength: 500 }}
+          />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenCancelDialog(false)}>Quay lại</Button>
-          <Button onClick={confirmCancelOrder} variant='contained' color='error' autoFocus>
+          <Button
+            onClick={() => {
+              setOpenCancelDialog(false)
+              setCancelReason('')
+            }}
+          >
+            Quay lại
+          </Button>
+          <Button
+            onClick={confirmCancelOrder}
+            variant='contained'
+            color='error'
+            disabled={cancelReason.trim().length < 5 || cancelReason.length > 500}
+          >
             Hủy đơn hàng
           </Button>
         </DialogActions>

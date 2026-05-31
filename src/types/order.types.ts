@@ -97,6 +97,7 @@ export interface Order {
   paymentStatus?: PaymentStatus
   payments: Payment[]
   logs: LogEntry[]
+  cancelReason?: string | null
 
   deliveredAt: Date | string | null
   createdAt: Date | string
