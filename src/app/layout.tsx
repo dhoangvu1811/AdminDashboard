@@ -1,11 +1,21 @@
 // Third-party Imports
 import 'react-perfect-scrollbar/dist/css/styles.css'
 
+// Next Font
+import { Be_Vietnam_Pro } from 'next/font/google'
+
 // Type Imports
 import type { ChildrenType } from '@core/types'
 
 // Style Imports
 import '@/app/globals.css'
+
+const beVietnamPro = Be_Vietnam_Pro({
+  subsets: ['vietnamese', 'latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-be-vietnam-pro',
+  display: 'swap'
+})
 
 // Generated Icon CSS Imports
 import '@assets/iconify-icons/generated-icons.css'
@@ -26,7 +36,7 @@ const RootLayout = ({ children }: ChildrenType) => {
   const direction = 'ltr'
 
   return (
-    <html id='__next' dir={direction}>
+    <html id='__next' dir={direction} className={beVietnamPro.variable}>
       <body className='flex is-full min-bs-full flex-auto flex-col'>
         <ReduxProvider>
           <SocketProvider>

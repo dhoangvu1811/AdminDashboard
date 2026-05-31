@@ -75,8 +75,10 @@ export const orderService = {
   /**
    * Cancel order
    */
-  cancel: async (id: number | string) => {
-    const response = await axiosInstance.post<ApiResponse<Order>>(API_ENDPOINTS.ORDERS.CANCEL(id))
+  cancel: async (id: number | string, cancelReason?: string) => {
+    const response = await axiosInstance.post<ApiResponse<Order>>(API_ENDPOINTS.ORDERS.CANCEL(id), {
+      cancelReason
+    })
 
     return response.data.data
   },

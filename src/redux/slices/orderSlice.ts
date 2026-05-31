@@ -165,17 +165,20 @@ export const markOrderPaid = createAsyncThunk('orders/markPaid', async (id: numb
 /**
  * Cancel order
  */
-export const cancelOrder = createAsyncThunk('orders/cancel', async (id: number | string, { rejectWithValue }) => {
-  try {
-    const response = await orderService.cancel(id)
+export const cancelOrder = createAsyncThunk(
+  'orders/cancel',
+  async ({ id, cancelReason }: { id: number | string; cancelReason?: string }, { rejectWithValue }) => {
+    try {
+      const response = await orderService.cancel(id, cancelReason)
 
-    return response
-  } catch (error: unknown) {
-    const err = error as { response?: { data?: { message?: string } } }
+      return response
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } }
 
-    return rejectWithValue(err.response?.data?.message || 'Không thể hủy đơn hàng')
+      return rejectWithValue(err.response?.data?.message || 'Không thể hủy đơn hàng')
+    }
   }
-})
+)
 
 // =========================================
 // Slice

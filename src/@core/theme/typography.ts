@@ -6,7 +6,7 @@ const typography = (fontFamily: string): Theme['typography'] =>
     fontFamily:
       typeof fontFamily === 'undefined' || fontFamily === ''
         ? [
-            'Inter',
+            'var(--font-be-vietnam-pro)',
             'sans-serif',
             '-apple-system',
             'BlinkMacSystemFont',
