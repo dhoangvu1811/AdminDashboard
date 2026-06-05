@@ -54,3 +54,13 @@ docs/category_api_doc.md
 docs/role_permission_api_doc.md
 docs/frontend_migration_guide.md
 GEMINI.md
+
+# Playwright
+playwright-report/
+test-results/
+playwright/.cache/
+blob-report/
+
+# CodeGraph
+.codegraph/
+
