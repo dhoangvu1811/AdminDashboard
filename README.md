@@ -28,6 +28,7 @@
 - [Pages & Routes](#-pages--routes)
 - [Role-Based Access Control (RBAC)](#-role-based-access-control-rbac)
 - [Architecture & Data Flow](#-architecture--data-flow)
+- [Related Projects](#-related-projects)
 
 ---
 
@@ -324,3 +325,16 @@ The `SocketProvider` establishes a WebSocket channel immediately after authentic
 - **`ORDER_NEW`**: Triggers desktop notification banners and audio cues to alert staff of incoming orders.
 - **`ORDER_STATUS_UPDATED`**: Refreshes tables dynamically without requiring page reloads.
 - **Automatic Cleanup**: Sockets are destroyed immediately upon logout or when the token refresh cycle fails.
+
+---
+
+## 🔗 Related Projects
+
+Here are the related repositories in the NextCommerce ecosystem:
+
+- **[Storefront Client (clientEC)](https://github.com/dhoangvu1811/E-Commerce-FE-Client)**: Customer-facing storefront.
+- **[Admin Dashboard](https://github.com/dhoangvu1811/AdminDashboard)**: Back-office management dashboard.
+- **[Commerce API Backend](https://github.com/dhoangvu1811/Commerce-Api)**: Core REST API gateway.
+- **[Embeddings & Vector Search](https://github.com/dhoangvu1811/ecommerce-Embeddings)**: FastAPI-based microservice for semantic search.
+- **[Product Recommendation Service](https://github.com/dhoangvu1811/ECommerce-Recommendation)**: FastAPI microservice for personalized recommendations.
+
