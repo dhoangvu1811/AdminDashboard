@@ -16,6 +16,7 @@
 ---
 
 ## 📋 Table of Contents
+- [Demo Video](#-demo-video)
 - [Overview](#-overview)
 - [Ecosystem Placement](#-ecosystem-placement)
 - [Tech Stack](#-tech-stack)
@@ -29,6 +30,12 @@
 - [Role-Based Access Control (RBAC)](#-role-based-access-control-rbac)
 - [Architecture & Data Flow](#-architecture--data-flow)
 - [Related Projects](#-related-projects)
+
+---
+
+## 🎬 Demo Video
+
+Watch the complete NextCommerce system demo on YouTube: [NextCommerce System Demo](https://youtu.be/4SFpf7OAiuE).
 
 ---
 
@@ -337,4 +344,3 @@ Here are the related repositories in the NextCommerce ecosystem:
 - **[Commerce API Backend](https://github.com/dhoangvu1811/Commerce-Api)**: Core REST API gateway.
 - **[Embeddings & Vector Search](https://github.com/dhoangvu1811/ecommerce-Embeddings)**: FastAPI-based microservice for semantic search.
 - **[Product Recommendation Service](https://github.com/dhoangvu1811/ECommerce-Recommendation)**: FastAPI microservice for personalized recommendations.
-
