@@ -70,6 +70,9 @@ const fetchFreshAccessToken = async (): Promise<string | null> => {
 export function SocketProvider({ children }: { children: ReactNode }) {
   const socketRef = useRef<Socket | null>(null)
   const retryCountRef = useRef(0)
+  const isConnectingRef = useRef(false)
+  const ordersRefreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const maxRetries = 3
   const dispatch = useAppDispatch()
   const [newOrderCount, setNewOrderCount] = useState(0)
@@ -81,6 +84,15 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     setNewOrderCount(0)
   }, [])
 
+  const scheduleOrdersRefresh = useCallback(() => {
+    if (ordersRefreshTimerRef.current) clearTimeout(ordersRefreshTimerRef.current)
+
+    ordersRefreshTimerRef.current = setTimeout(() => {
+      ordersRefreshTimerRef.current = null
+      dispatch(fetchOrders({}))
+    }, 300)
+  }, [dispatch])
+
   /**
    * Đơn hàng mới được tạo bởi client
    */
@@ -90,10 +102,10 @@ export function SocketProvider({ children }: { children: ReactNode }) {
 
       // Fallback: đồng bộ nhanh notification khi có ORDER_NEW,
       // tránh phụ thuộc duy nhất vào event NOTIFICATION_NEW.
-      dispatch(fetchOrders({}))
+      scheduleOrdersRefresh()
       dispatch(fetchNotifications({ page: 1, limit: 20 }))
     },
-    [dispatch]
+    [dispatch, scheduleOrdersRefresh]
   )
 
   /**
@@ -109,9 +121,9 @@ export function SocketProvider({ children }: { children: ReactNode }) {
         duration: 4000
       })
 
-      dispatch(fetchOrders({}))
+      scheduleOrdersRefresh()
     },
-    [dispatch]
+    [scheduleOrdersRefresh]
   )
 
   /**
@@ -122,7 +134,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
       // Khi user thanh toán PayPal thành công, backend gửi cả ORDER_PAYMENT_UPDATED
       // và NOTIFICATION_NEW. Toast ở đây sẽ bị trùng với NOTIFICATION_NEW.
       if (String(data.toPaymentStatus || '').toUpperCase() === 'PAID') {
-        dispatch(fetchOrders({}))
+        scheduleOrdersRefresh()
 
         return
       }
@@ -132,9 +144,9 @@ export function SocketProvider({ children }: { children: ReactNode }) {
         duration: 4000
       })
 
-      dispatch(fetchOrders({}))
+      scheduleOrdersRefresh()
     },
-    [dispatch]
+    [scheduleOrdersRefresh]
   )
 
   /**
@@ -144,9 +156,9 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     (_data: OrderCancelledPayload) => {
       // Không hiển thị toast ở đây — toast được xử lý tập trung bởi NOTIFICATION_NEW handler
       // Chỉ refresh danh sách đơn hàng
-      dispatch(fetchOrders({}))
+      scheduleOrdersRefresh()
     },
-    [dispatch]
+    [scheduleOrdersRefresh]
   )
 
   /**
@@ -158,9 +170,9 @@ export function SocketProvider({ children }: { children: ReactNode }) {
         duration: 4000
       })
 
-      dispatch(fetchOrders({}))
+      scheduleOrdersRefresh()
     },
-    [dispatch]
+    [scheduleOrdersRefresh]
   )
 
   /**
@@ -180,11 +192,6 @@ export function SocketProvider({ children }: { children: ReactNode }) {
           updatedAt: data.createdAt
         })
       )
-
-      // Fallback đồng bộ trạng thái đơn khi nhận notification thanh toán.
-      if (data.type === 'ORDER_PAYMENT') {
-        dispatch(fetchOrders({}))
-      }
 
       // Hiển thị toast
       toast(data.message, { icon: '🔔', duration: 4000 })
@@ -212,96 +219,153 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     // Tránh kết nối lại nếu đã có
     if (socketRef.current?.connected) return
 
+    let isDisposed = false
+
     /**
      * Refresh token trước → kết nối socket → nếu TOKEN_EXPIRED thì refresh và retry
      */
     const connectSocket = async () => {
-      // Lấy access token mới qua refresh endpoint
-      const freshToken = await fetchFreshAccessToken()
+      if (isDisposed || document.hidden || isConnectingRef.current || socketRef.current) return
 
-      // Nếu đã bị disconnect trong lúc chờ refresh, bỏ qua
-      if (socketRef.current?.connected) return
+      isConnectingRef.current = true
 
-      // Nếu không lấy được token → không kết nối
-      if (!freshToken) {
-        // eslint-disable-next-line no-console
-        console.warn('[Socket] Không lấy được access token, bỏ qua kết nối')
+      try {
+        // Lấy access token mới qua refresh endpoint
+        const freshToken = await fetchFreshAccessToken()
 
-        return
-      }
+        // Nếu tab đã ẩn hoặc socket khác kết nối trong lúc refresh, bỏ qua.
+        if (isDisposed || document.hidden || socketRef.current) return
 
-      const socket = io(SOCKET_URL, {
-        withCredentials: true,
-        transports: ['websocket', 'polling'],
-        autoConnect: true,
-
-        // Truyền token trực tiếp qua auth (không phụ thuộc cookie trong WS handshake)
-        auth: { token: freshToken },
-
-        // Tắt auto reconnect mặc định, tự xử lý retry với refresh token
-        reconnection: false
-      })
-
-      // ── Connection events ──
-      socket.on('connect', () => {
-        retryCountRef.current = 0
-        setIsConnected(true)
-        // eslint-disable-next-line no-console
-        console.log('[Socket] Admin connected:', socket.id)
-      })
-
-      socket.on('disconnect', reason => {
-        setIsConnected(false)
-        // eslint-disable-next-line no-console
-        console.log('[Socket] Admin disconnected:', reason)
-
-        // Nếu server ngắt, thử reconnect
-        if (reason === 'io server disconnect' || reason === 'transport close') {
-          setTimeout(() => {
-            if (retryCountRef.current < maxRetries) {
-              retryCountRef.current++
-              // eslint-disable-next-line no-console
-              console.log(`[Socket] Admin reconnecting... (${retryCountRef.current}/${maxRetries})`)
-              connectSocket()
-            }
-          }, 2000)
-        }
-      })
-
-      socket.on('connect_error', async err => {
-        // eslint-disable-next-line no-console
-        console.error('[Socket] Admin connection error:', err.message)
-
-        // Token hết hạn → refresh rồi thử lại
-        if (err.message === 'TOKEN_EXPIRED' && retryCountRef.current < maxRetries) {
-          retryCountRef.current++
+        // Nếu không lấy được token → không kết nối
+        if (!freshToken) {
           // eslint-disable-next-line no-console
-          console.log(`[Socket] Token expired, refreshing... (${retryCountRef.current}/${maxRetries})`)
+          console.warn('[Socket] Không lấy được access token, bỏ qua kết nối')
 
-          socket.disconnect()
-          socketRef.current = null
-
-          // Retry sẽ gọi lại connectSocket → fetchFreshAccessToken → auth.token mới
-          setTimeout(() => connectSocket(), 500)
+          return
         }
-      })
 
-      // ── Order lifecycle events ──
-      socket.on(SOCKET_EVENTS.ORDER_NEW, handleNewOrder)
-      socket.on(SOCKET_EVENTS.ORDER_STATUS_UPDATED, handleOrderStatusUpdated)
-      socket.on(SOCKET_EVENTS.ORDER_PAYMENT_UPDATED, handlePaymentUpdated)
-      socket.on(SOCKET_EVENTS.ORDER_CANCELLED, handleOrderCancelled)
-      socket.on(SOCKET_EVENTS.ORDER_MARK_PAID, handleMarkPaid)
+        const socket = io(SOCKET_URL, {
+          withCredentials: true,
+          transports: ['websocket'],
+          autoConnect: true,
 
-      // ── Notification events ──
-      socket.on(SOCKET_EVENTS.NOTIFICATION_NEW, handleNewNotification)
+          // Truyền token trực tiếp qua auth (không phụ thuộc cookie trong WS handshake)
+          auth: { token: freshToken },
 
-      socketRef.current = socket
+          // Tắt auto reconnect mặc định, tự xử lý retry với refresh token
+          reconnection: false
+        })
+
+        socketRef.current = socket
+
+        // ── Connection events ──
+        socket.on('connect', () => {
+          retryCountRef.current = 0
+          setIsConnected(true)
+          // eslint-disable-next-line no-console
+          console.log('[Socket] Admin connected:', socket.id)
+        })
+
+        socket.on('disconnect', reason => {
+          setIsConnected(false)
+          // eslint-disable-next-line no-console
+          console.log('[Socket] Admin disconnected:', reason)
+
+          // Nếu server ngắt, thử reconnect
+          if (reason === 'io server disconnect' || reason === 'transport close') {
+            if (socketRef.current === socket) socketRef.current = null
+            socket.removeAllListeners()
+            if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current)
+            reconnectTimerRef.current = setTimeout(() => {
+              reconnectTimerRef.current = null
+
+              if (retryCountRef.current < maxRetries) {
+                retryCountRef.current++
+                // eslint-disable-next-line no-console
+                console.log(`[Socket] Admin reconnecting... (${retryCountRef.current}/${maxRetries})`)
+                connectSocket()
+              }
+            }, 2000)
+          }
+        })
+
+        socket.on('connect_error', async err => {
+          // eslint-disable-next-line no-console
+          console.error('[Socket] Admin connection error:', err.message)
+
+          socket.removeAllListeners()
+          socket.disconnect()
+          if (socketRef.current === socket) socketRef.current = null
+
+          // Token hết hạn → refresh rồi thử lại
+          if (err.message === 'TOKEN_EXPIRED' && retryCountRef.current < maxRetries) {
+            retryCountRef.current++
+            // eslint-disable-next-line no-console
+            console.log(`[Socket] Token expired, refreshing... (${retryCountRef.current}/${maxRetries})`)
+
+            // Retry sẽ gọi lại connectSocket → fetchFreshAccessToken → auth.token mới
+            if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current)
+            reconnectTimerRef.current = setTimeout(() => {
+              reconnectTimerRef.current = null
+              connectSocket()
+            }, 500)
+          }
+        })
+
+        // ── Order lifecycle events ──
+        socket.on(SOCKET_EVENTS.ORDER_NEW, handleNewOrder)
+        socket.on(SOCKET_EVENTS.ORDER_STATUS_UPDATED, handleOrderStatusUpdated)
+        socket.on(SOCKET_EVENTS.ORDER_PAYMENT_UPDATED, handlePaymentUpdated)
+        socket.on(SOCKET_EVENTS.ORDER_CANCELLED, handleOrderCancelled)
+        socket.on(SOCKET_EVENTS.ORDER_MARK_PAID, handleMarkPaid)
+
+        // ── Notification events ──
+        socket.on(SOCKET_EVENTS.NOTIFICATION_NEW, handleNewNotification)
+      } finally {
+        isConnectingRef.current = false
+      }
     }
 
     connectSocket()
 
+    // Ngắt socket khi tab ẩn → giải phóng compute Render free.
+    // Kết nối lại khi tab hiện → trải nghiệm realtime vẫn đảm bảo khi đang dùng.
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        if (reconnectTimerRef.current) {
+          clearTimeout(reconnectTimerRef.current)
+          reconnectTimerRef.current = null
+        }
+
+        if (socketRef.current) {
+          socketRef.current.removeAllListeners()
+          socketRef.current.disconnect()
+          socketRef.current = null
+          setIsConnected(false)
+        }
+      } else {
+        if (!socketRef.current?.connected) {
+          connectSocket()
+        }
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
     return () => {
+      isDisposed = true
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+
+      if (ordersRefreshTimerRef.current) {
+        clearTimeout(ordersRefreshTimerRef.current)
+        ordersRefreshTimerRef.current = null
+      }
+
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current)
+        reconnectTimerRef.current = null
+      }
+
       if (socketRef.current) {
         socketRef.current.removeAllListeners()
         socketRef.current.disconnect()
